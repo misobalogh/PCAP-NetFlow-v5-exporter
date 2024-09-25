@@ -1,14 +1,27 @@
 #include <iostream>
+
 #include "ArgParser.h"
+#include "PcapReader.h"
+#include "ErrorCodes.h"
 
 int main(int argc, char* argv[]) {
-    ArgParser parser(argc, argv);
+    ArgParser programArguments(argc, argv);
 
-    std::cout << "Host: " << parser.getHost() << "\n";
-    std::cout << "Port: " << parser.getPort() << "\n";
-    std::cout << "PCAP File Path: " << parser.getPCAPFilePath() << "\n";
-    std::cout << "Active Timeout: " << parser.getActiveTimeout() << " seconds\n";
-    std::cout << "Inactive Timeout: " << parser.getInactiveTimeout() << " seconds\n";
+    std::cout << "Host: " << programArguments.getHost() << "\n";
+    std::cout << "Port: " << programArguments.getPort() << "\n";
+    std::cout << "PCAP File Path: " << programArguments.getPCAPFilePath() << "\n";
+    std::cout << "Active Timeout: " << programArguments.getActiveTimeout() << " seconds\n";
+    std::cout << "Inactive Timeout: " << programArguments.getInactiveTimeout() << " seconds\n\n";
 
-    return 0; 
+    auto pcapFilePath = programArguments.getPCAPFilePath();
+
+    PcapReader reader(pcapFilePath);
+    if (!reader.open()) {
+        ExitWith(ErrorCode::FILE_OPEN_ERROR);
+    }
+
+    reader.readAllPackets();
+    reader.close();
+
+    return 0;
 }

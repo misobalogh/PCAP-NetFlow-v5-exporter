@@ -1,11 +1,12 @@
-#include "ArgParser.h"
-#include "ErrorCodes.h" 
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
 #include <cstring>
 
-const unsigned int PORT_MIN = 1;   
+#include "ArgParser.h"
+#include "ErrorCodes.h" 
+
+const unsigned int PORT_MIN = 1;
 const unsigned int PORT_MAX = 65535; 
 
 ArgParser::ArgParser(int argc, char* argv[]) {
@@ -14,11 +15,11 @@ ArgParser::ArgParser(int argc, char* argv[]) {
     parseArgs(argc, argv);
 }
 
-void ArgParser::parseHostAndPort(const std::string& collectorAdress, size_t colonPos) {
+void ArgParser::parseHostAndPort(const std::string& collectorAdress, size_t colonIndex) {
     
     // Split into host and port part
-    std::string host = collectorAdress.substr(0, colonPos);
-    std::string port_str = collectorAdress.substr(colonPos + 1);
+    std::string host = collectorAdress.substr(0, colonIndex);
+    std::string port_str = collectorAdress.substr(colonIndex + 1);
 
     int port;
 
