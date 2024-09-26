@@ -11,3 +11,6 @@ how to read pcap file in cpp
 https://gist.github.com/voldemur/261b5bc42688b9cf425fbaedc2d5fcbe#file-pcap_reader-cpp
 
 https://man7.org/linux/man-pages/man3/inet_ntop.3.html
+
+virtual classes in cpp
+https://www.scaler.com/topics/virtual-base-class-in-cpp/
