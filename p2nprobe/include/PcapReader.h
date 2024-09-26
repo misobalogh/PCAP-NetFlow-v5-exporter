@@ -3,6 +3,7 @@
 
 #include <pcap.h>
 #include <string>
+#include "FlowManager.h"
 
 class PcapReader {
     public:
@@ -15,10 +16,10 @@ class PcapReader {
         void readAllPackets();
 
     private:
-        std::string pcapFile;
-        char errbuf[PCAP_ERRBUF_SIZE];
-        
-        pcap_t* handle = nullptr;
+        std::string _pcapFile;
+        char _errbuf[PCAP_ERRBUF_SIZE];
+        FlowManager _flowManager;
+        pcap_t* _handle = nullptr;
 
         bool isTcpPacket(const u_char* packet);
         void processPacket(const struct pcap_pkthdr* header, const u_char* packet);

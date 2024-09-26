@@ -14,3 +14,6 @@ https://man7.org/linux/man-pages/man3/inet_ntop.3.html
 
 virtual classes in cpp
 https://www.scaler.com/topics/virtual-base-class-in-cpp/
+
+copy constuctor
+https://www.geeksforgeeks.org/copy-constructor-in-cpp/

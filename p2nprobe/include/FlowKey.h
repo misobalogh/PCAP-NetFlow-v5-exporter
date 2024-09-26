@@ -2,11 +2,12 @@
 #define FLOW_KEY_H
 
 #include <cstddef> // For size_t
+#include <string>
 
 class FlowKey {
 public:
     virtual ~FlowKey() = default; 
-    virtual size_t hash() const = 0; 
+    virtual std::string concatToString() const = 0; 
     virtual bool operator==(const FlowKey& other) const = 0; 
 };
 

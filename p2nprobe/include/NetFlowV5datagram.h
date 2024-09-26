@@ -2,8 +2,6 @@
 #define NETFLOW_V5_DATAGRAM_H
 
 #include <array>
-#include <cstring>
-#include <iostream>
 
 #include "NetFlowV5header.h"
 #include "NetFlowV5record.h"

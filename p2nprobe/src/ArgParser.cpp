@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
-#include <cstring>
 
 #include "ArgParser.h"
 #include "ErrorCodes.h" 
