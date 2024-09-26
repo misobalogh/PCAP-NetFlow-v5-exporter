@@ -1,8 +1,8 @@
 #include <iostream>
 
+#include "ErrorCodes.h"
 #include "ArgParser.h"
 #include "PcapReader.h"
-#include "ErrorCodes.h"
 
 int main(int argc, char* argv[]) {
     ArgParser programArguments(argc, argv);

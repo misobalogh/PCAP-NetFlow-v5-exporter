@@ -62,6 +62,8 @@ void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
         return; 
     }
 
+    // TODO: read about ipv6
+
     // skip ethernt header
     const u_char* ipOffset = packet + ETHERNET_HEADER_SIZE;
     const struct ip* ipHeader = reinterpret_cast<const struct ip*>(ipOffset);

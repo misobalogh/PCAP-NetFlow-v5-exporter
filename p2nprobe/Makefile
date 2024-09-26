@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++11 -Iinclude
+CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude
 LDFLAGS = -lpcap
 SRC = src/main.cpp src/ArgParser.cpp src/PcapReader.cpp
 
@@ -12,7 +12,7 @@ all: $(TARGET)
 $(TARGET): $(SRC:.cpp=.o)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-src/%.o: src/%.cpp include/ArgParser.h include/ErrorCodes.h include/PcapReader.h
+src/%.o: src/%.cpp include/ArgParser.h include/ErrorCodes.h include/PcapReader.h 
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
