@@ -3,8 +3,8 @@
 
 #include "NetFlowV5Key.h"
 
-NetFlowV5Key::NetFlowV5Key(const std::string& src, const std::string& dst, uint16_t sp, uint16_t dp, uint8_t proto, uint8_t tos)
-    : src_ip(src), dst_ip(dst), src_port(sp), dst_port(dp), protocol(proto), type_of_service(tos) {}
+NetFlowV5Key::NetFlowV5Key(const std::string& src, const std::string& dst, uint8_t proto, uint16_t sp, uint16_t dp, uint8_t tos)
+    : src_ip(src), dst_ip(dst), protocol(proto), src_port(sp), dst_port(dp), type_of_service(tos) {}
 
 std::string NetFlowV5Key::concatToString() const {
     std::ostringstream oss;

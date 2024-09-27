@@ -94,7 +94,7 @@ void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
     uint16_t srcPort = ntohs(tcpHeader->source);
     uint16_t dstPort = ntohs(tcpHeader->dest);
 
-    NetFlowV5Key key(srcIp, dstIp, srcPort, dstPort, ipHeader->ip_p, ipHeader->ip_tos);
+    NetFlowV5Key key(srcIp, dstIp, ipHeader->ip_p, srcPort, dstPort, ipHeader->ip_tos);
     uint64_t bytes = 32;
 
     _flowManager.add_or_update_flow(key, bytes);

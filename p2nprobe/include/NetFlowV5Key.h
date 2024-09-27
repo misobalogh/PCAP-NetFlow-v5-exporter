@@ -18,7 +18,7 @@ class NetFlowV5Key : public FlowKey {
         uint16_t dst_port;      // 6.
         uint8_t type_of_service;// 7.
 
-        NetFlowV5Key(const std::string& src, const std::string& dst, uint16_t sp, uint16_t dp, uint8_t proto, uint8_t tos);
+        NetFlowV5Key(const std::string& src, const std::string& dst, uint8_t proto, uint16_t sp, uint16_t dp,  uint8_t tos);
 
         // Comparison operator for comparing keys in case of colision
         bool operator==(const FlowKey& other) const override;
