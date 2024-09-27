@@ -1,28 +1,23 @@
+#ifndef FLOW_H
+#define FLOW_H
+
 #include <chrono>
-#include "NetFlowV5Key.h"
+#include <memory>
+
+#include "FlowKey.h"
 
 class Flow {
-    public:
-        FlowKey* key;
-        uint64_t packet_count;
-        uint64_t byte_count;
-        std::chrono::time_point<std::chrono::system_clock> start_time;
-        std::chrono::time_point<std::chrono::system_clock> last_update_time;
+public:
+    std::shared_ptr<FlowKey> key;  
+    
+    Flow(std::shared_ptr<FlowKey> flow_key); 
+    ~Flow() = default; 
 
-        Flow(FlowKey* flow_key)
-            : key(flow_key), packet_count(0), byte_count(0) {
-            start_time = std::chrono::system_clock::now();
-            last_update_time = start_time;
-        }
+    Flow(const Flow& other) = default; 
+    Flow& operator=(const Flow& other) = default;  
 
-        Flow(const Flow& other)
-            : key(other.key), packet_count(other.packet_count),
-            byte_count(other.byte_count), start_time(other.start_time),
-            last_update_time(other.last_update_time) {}
-
-        ~Flow() {
-            delete key; 
-        }
-
-        void update(uint64_t bytes);
+    void update(uint64_t bytes);
 };
+
+
+#endif // FLOW_H

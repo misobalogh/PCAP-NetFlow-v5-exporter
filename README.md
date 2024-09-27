@@ -1,5 +1,12 @@
 # PCAP-NetFlow-v5-exporter
 
+## TODO:
+- [] unite style across files
+- [] check unused includes, functions, variables
+- [] add more comments
+- [] add headers with name and descriptioin
+
+
 ## Bibliography
 https://cplusplus.com/reference/
 https://www.w3schools.com/cpp/cpp_oop.asp
