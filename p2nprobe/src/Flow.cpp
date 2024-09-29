@@ -4,11 +4,9 @@
 #include "Flow.h"
 
 
-Flow::Flow(std::shared_ptr<FlowKey> flow_key)
-    : key(flow_key) {}
+Flow::Flow(NetFlowV5Key key, NetFlowV5record record)
+    : key(key), record(record) {}
 
 void Flow::update(uint64_t bytes) {
-    if (auto netflow_key = std::dynamic_pointer_cast<NetFlowV5Key>(key)) {
-        std::cout << "Updating flow with bytes" << bytes << " with key: " << netflow_key << "\n";
-    }
+    std::cout << "Updating flow with bytes" << bytes << " with key: " << "\n";
 }

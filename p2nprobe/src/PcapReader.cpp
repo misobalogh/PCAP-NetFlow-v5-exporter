@@ -6,6 +6,7 @@
 #include "PcapReader.h"
 #include "ErrorCodes.h"
 #include "NetFlowV5Key.h"
+#include "NetFlowV5record.h"
 
 const unsigned int ETHERNET_HEADER_SIZE = 14;
 
@@ -63,9 +64,7 @@ void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
         return;
     }
 
-    // TODO: read about ipv6
-
-    // skip ethernt header
+    // Skip Ethernet header
     const u_char* ipOffset = packet + ETHERNET_HEADER_SIZE;
     const struct ip* ipHeader = reinterpret_cast<const struct ip*>(ipOffset);
     if (ipHeader == nullptr) {
@@ -73,13 +72,7 @@ void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
         ExitWith(ErrorCode::INVALID_PACKET);
     }
 
-    char srcIp[INET_ADDRSTRLEN];
-    char dstIp[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &(ipHeader->ip_src), srcIp, INET_ADDRSTRLEN);
-    inet_ntop(AF_INET, &(ipHeader->ip_dst), dstIp, INET_ADDRSTRLEN);
-
-    // calculation of the offset from: https://www.tcpdump.org/pcap.html
-    unsigned int ipHeaderLength = ipHeader->ip_hl * 4; // multiply by 4 to get size in bytes
+    unsigned int ipHeaderLength = ipHeader->ip_hl * 4; // Length of IP header
     if (ipHeaderLength < 20) {
         std::cerr << "Error: Invalid IP header length: " << ipHeaderLength << " bytes." << std::endl;
         return;
@@ -91,13 +84,17 @@ void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
         ExitWith(ErrorCode::INVALID_PACKET);
     }
 
-    uint16_t srcPort = ntohs(tcpHeader->source);
-    uint16_t dstPort = ntohs(tcpHeader->dest);
-
-    NetFlowV5Key key(srcIp, dstIp, ipHeader->ip_p, srcPort, dstPort, ipHeader->ip_tos);
-    uint64_t bytes = 32;
-
-    _flowManager.add_or_update_flow(key, bytes);
+    NetFlowV5record record;
+    record.prot = IPPROTO_TCP;
+    record.srcaddr = ntohl(ipHeader->ip_src.s_addr);
+    record.dstaddr = ntohl(ipHeader->ip_dst.s_addr);
+    record.srcport = ntohs(tcpHeader->source);
+    record.dstport = ntohs(tcpHeader->dest);
+    record.tos = ipHeader->ip_tos;
+    record.tcp_flags = tcpHeader->th_flags;
+    record.input = 0;   
+    
+    _flowManager.add_or_update_flow(record);
 }
 
 

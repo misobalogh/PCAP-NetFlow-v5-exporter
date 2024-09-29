@@ -4,17 +4,18 @@
 #include "FlowManager.h"
 #include "NetFlowV5Key.h"
 
-void FlowManager::add_or_update_flow(const FlowKey& key, uint64_t bytes) {
+void FlowManager::add_or_update_flow(NetFlowV5record record) {
+    NetFlowV5Key key(record);
     std::string concat_key = key.concatToString();
     auto flow = flow_map.find(concat_key);
 
     if (flow != flow_map.end()) {
-        flow->second.update(bytes);
+        flow->second.update(32);
     }
     else {
-        flow_map.emplace(concat_key, Flow(std::make_shared<NetFlowV5Key>(dynamic_cast<const NetFlowV5Key&>(key))));
+        flow_map.emplace(concat_key, Flow(key, record));
         auto flow = flow_map.find(concat_key);
-        std::cout << "creating new flow with key: " << flow->second.key << "\n";
+        std::cout << "creating new flow with key: " << "\n";
     }
 }
 

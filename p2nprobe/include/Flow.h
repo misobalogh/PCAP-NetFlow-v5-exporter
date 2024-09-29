@@ -4,16 +4,19 @@
 #include <chrono>
 #include <memory>
 
-#include "FlowKey.h"
+#include "NetFlowV5Key.h"
+#include "NetFlowV5datagram.h"
 
 class Flow {
 public:
-    std::shared_ptr<FlowKey> key;  
+    NetFlowV5Key key;
+    NetFlowV5record record;
+    NetFlowV5header header;
     
-    Flow(std::shared_ptr<FlowKey> flow_key); 
-    ~Flow() = default; 
-
-    Flow(const Flow& other) = default; 
+    Flow(NetFlowV5Key key, NetFlowV5record record);
+    ~Flow() = default;
+    
+    Flow(const Flow& other) = default;
     Flow& operator=(const Flow& other) = default;  
 
     void update(uint64_t bytes);

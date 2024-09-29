@@ -13,7 +13,7 @@ class FlowManager {
 public:
     Exporter exporter;
 
-    void add_or_update_flow(const FlowKey& key, uint64_t bytes);
+    void add_or_update_flow(NetFlowV5record record);
 
     void cleanup_expired_flows(std::chrono::duration<double> timeout);
 

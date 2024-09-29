@@ -1,7 +1,11 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude
+CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude -MMD -MP
 LDFLAGS = -lpcap
-SRC = src/main.cpp src/ArgParser.cpp src/PcapReader.cpp
+SRC_DIR = src
+BUILD_DIR = build
+SRC = $(wildcard $(SRC_DIR)/*.cpp)
+OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC))
+DEPS = $(OBJS:.o=.d)
 
 TARGET = p2nprobe
 
@@ -9,15 +13,17 @@ TARGET = p2nprobe
 
 all: $(TARGET)
 
-$(TARGET): $(SRC:.cpp=.o)
+$(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-src/%.o: src/%.cpp include/ArgParser.h include/ErrorCodes.h include/PcapReader.h 
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+-include $(DEPS)
+
 clean:
-	rm -f $(TARGET) src/*.o
+	rm -rf $(BUILD_DIR) $(TARGET)
 
 run: $(TARGET)
 	./$(TARGET) localhost:2055 ../my_pcap.pcap
-
