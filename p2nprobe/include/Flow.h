@@ -19,7 +19,7 @@ public:
     Flow(const Flow& other) = default;
     Flow& operator=(const Flow& other) = default;  
 
-    void update(uint64_t bytes);
+    void update(uint8_t tcp_flags, uint32_t num_layer_3_bytes, uint32_t timestamp);
 };
 
 

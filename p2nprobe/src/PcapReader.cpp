@@ -2,6 +2,8 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <iostream>
+#include <sys/time.h> 
+#include <cstring>
 
 #include "PcapReader.h"
 #include "ErrorCodes.h"
@@ -10,8 +12,8 @@
 
 const unsigned int ETHERNET_HEADER_SIZE = 14;
 
-PcapReader::PcapReader(const std::string& pcapFilePath) {
-    _pcapFile = pcapFilePath;
+PcapReader::PcapReader(const std::string& pcapFilePath, const std::string& collector_ip, int collector_port)
+    : _pcapFile(pcapFilePath), _flowManager(collector_ip, collector_port) { 
     _errbuf[0] = '\0';
 }
 
@@ -51,6 +53,8 @@ void PcapReader::readAllPackets() {
         processPacket(header, packet);
     }
 
+    _flowManager.export_all();
+
     if (result == -1) {
         std::cerr << "Error reading the packet: " << pcap_geterr(_handle) << std::endl;
         close();
@@ -84,6 +88,11 @@ void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
         ExitWith(ErrorCode::INVALID_PACKET);
     }
 
+    uint32_t totalPacketLength = header->len - ETHERNET_HEADER_SIZE;
+    struct timeval packet_timestamp = header->ts;
+    uint32_t timestamp_ms = packet_timestamp.tv_sec * 1000 + packet_timestamp.tv_usec / 1000;
+
+
     NetFlowV5record record;
     record.prot = IPPROTO_TCP;
     record.srcaddr = ntohl(ipHeader->ip_src.s_addr);
@@ -92,8 +101,11 @@ void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
     record.dstport = ntohs(tcpHeader->dest);
     record.tos = ipHeader->ip_tos;
     record.tcp_flags = tcpHeader->th_flags;
-    record.input = 0;   
-    
+    record.input = 0;
+    record.dOctets = totalPacketLength;
+    record.dPkts = 1; // if new flow is created, number of packets will be 1
+    record.Last = timestamp_ms;
+
     _flowManager.add_or_update_flow(record);
 }
 

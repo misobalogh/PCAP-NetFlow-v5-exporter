@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
 
     auto pcapFilePath = programArguments.getPCAPFilePath();
 
-    PcapReader reader(pcapFilePath);
+    PcapReader reader(pcapFilePath, programArguments.getHost(), programArguments.getPort());
     if (!reader.open()) {
         ExitWith(ErrorCode::FILE_OPEN_ERROR);
     }
