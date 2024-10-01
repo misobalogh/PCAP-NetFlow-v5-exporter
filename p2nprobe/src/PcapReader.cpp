@@ -12,8 +12,14 @@
 
 const unsigned int ETHERNET_HEADER_SIZE = 14;
 
-PcapReader::PcapReader(const std::string& pcapFilePath, const std::string& collector_ip, int collector_port)
-    : _pcapFile(pcapFilePath), _flowManager(collector_ip, collector_port) { 
+PcapReader::PcapReader(ArgParser programArguments)
+    : _pcapFile(programArguments.getPCAPFilePath()),
+    _flowManager(
+        programArguments.getHost(),
+        programArguments.getPort(),
+        programArguments.getActiveTimeout(),
+        programArguments.getInactiveTimeout()
+    ) {
     _errbuf[0] = '\0';
 }
 
@@ -53,7 +59,7 @@ void PcapReader::readAllPackets() {
         processPacket(header, packet);
     }
 
-    _flowManager.export_all();
+    _flowManager.export_remaining();
 
     if (result == -1) {
         std::cerr << "Error reading the packet: " << pcap_geterr(_handle) << std::endl;

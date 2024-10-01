@@ -13,9 +13,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Active Timeout: " << programArguments.getActiveTimeout() << " seconds\n";
     std::cout << "Inactive Timeout: " << programArguments.getInactiveTimeout() << " seconds\n\n";
 
-    auto pcapFilePath = programArguments.getPCAPFilePath();
 
-    PcapReader reader(pcapFilePath, programArguments.getHost(), programArguments.getPort());
+    PcapReader reader(programArguments);
     if (!reader.open()) {
         ExitWith(ErrorCode::FILE_OPEN_ERROR);
     }

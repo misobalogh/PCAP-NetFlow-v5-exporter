@@ -4,10 +4,11 @@
 #include <pcap.h>
 #include <string>
 #include "FlowManager.h"
+#include "ArgParser.h"
 
 class PcapReader {
     public:
-        PcapReader(const std::string& pcapFilePath, const std::string& collector_ip, int collector_port);
+        PcapReader(ArgParser programArguments);
         ~PcapReader();
 
         bool open(); 

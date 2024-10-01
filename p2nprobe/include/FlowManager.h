@@ -11,19 +11,24 @@
 
 class FlowManager {
 public:
-    FlowManager(const std::string& collector_ip, int collector_port)
-        : exporter(collector_ip, collector_port) {} 
+    FlowManager(const std::string& collector_ip, int collector_port, int activeTimeout, int inactiveTimeout)
+        : exporter(collector_ip, collector_port), active_timeout(activeTimeout), inactive_timeout(inactiveTimeout) {} 
     ~FlowManager();
 
     void add_or_update_flow(NetFlowV5record record);
-    void cleanup_expired_flows(std::chrono::duration<double> timeout);
-    void export_all();
+    void export_expired();
+    void export_full();
+    void export_remaining();
     void dispose();
 
+
 private:
-    uint32_t total_octets = 0;
-    std::unordered_map<std::string, Flow> flow_map;
+    uint32_t flow_count = 0;
+    uint32_t flows_exported = 0;
     Exporter exporter;
+    int active_timeout;
+    int inactive_timeout;
+    std::unordered_map<std::string, Flow> flow_map;
 };
 
 #endif // FLOW_MANAGER_H

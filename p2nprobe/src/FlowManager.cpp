@@ -12,7 +12,6 @@ void FlowManager::add_or_update_flow(NetFlowV5record new_packet) {
     NetFlowV5Key key(new_packet);
     std::string concat_key = key.concatToString();
     auto flow = flow_map.find(concat_key);
-    total_octets += new_packet.dOctets;
 
     if (flow != flow_map.end()) {
         // update existing one
@@ -20,29 +19,35 @@ void FlowManager::add_or_update_flow(NetFlowV5record new_packet) {
     }
     else {
         // create new
+        flow_count++;
         new_packet.First = new_packet.Last;
         flow_map.emplace(concat_key, Flow(key, new_packet));
-        auto flow = flow_map.find(concat_key);
+        flow = flow_map.find(concat_key);
     }
+
+    // todo: check for expiration(if expired -> export_expired())
+    // if (flow->second.is_expired()) {
+    //     exporter.send_flow()
+    // }
 }
 
 void FlowManager::dispose() {
-    for (const auto& pair : flow_map) {
-        exporter.send_flows(pair.second);
-    }
+    // for (const auto& pair : flow_map) {
+    //     exporter.send_flows(pair.second);
+    // }
     flow_map.clear();
 }
 
 
-void FlowManager::export_all() {
+void FlowManager::export_remaining() {
     if (flow_map.empty()) {
         std::cerr << "No flows to export." << std::endl;
         return;
     }
-    int total_flows = 0;
+
     for (const auto& entry : flow_map) {
         exporter.send_flows(entry.second); 
-        total_flows += 1;
+        flows_exported++;
     }
-    std::cout << "Total flows: " << total_flows << std::endl;
+    std::cout << "Total flows: " << flow_count << std::endl;
 }
