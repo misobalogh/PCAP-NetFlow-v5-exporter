@@ -5,6 +5,7 @@
 - [ ] check unused includes, functions, variables
 - [ ] add more comments
 - [ ] add headers with name and descriptioin
+- [ ] remove all outputs to console
 
 
 ## Bibliography

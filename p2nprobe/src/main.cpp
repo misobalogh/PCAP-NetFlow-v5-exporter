@@ -2,7 +2,7 @@
 
 #include "ErrorCodes.h"
 #include "ArgParser.h"
-#include "PcapReader.h"
+#include "FlowManager.h"
 
 int main(int argc, char* argv[]) {
     ArgParser programArguments(argc, argv);
@@ -13,14 +13,20 @@ int main(int argc, char* argv[]) {
     std::cout << "Active Timeout: " << programArguments.getActiveTimeout() << " seconds\n";
     std::cout << "Inactive Timeout: " << programArguments.getInactiveTimeout() << " seconds\n\n";
 
+    int result;
+    FlowManager manager(programArguments);
 
-    PcapReader reader(programArguments);
-    if (!reader.open()) {
-        ExitWith(ErrorCode::FILE_OPEN_ERROR);
+    result = manager.startProcessing();
+
+    manager.export_remaining();
+    manager.dispose();
+
+    if (result == -1) {
+        std::cerr << "Error reading a packet." << std::endl;
+        ExitWith(ErrorCode::READING_PACKET_ERROR);
     }
+    // result -2 means end of pcap file -> no error
+    // reulst 0 also means no error
 
-    reader.readAllPackets();
-    reader.close();
-
-    return 0;
+    ExitWith(ErrorCode::SUCCESS);
 }

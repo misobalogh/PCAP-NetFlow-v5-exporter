@@ -12,26 +12,18 @@
 
 const unsigned int ETHERNET_HEADER_SIZE = 14;
 
-PcapReader::PcapReader(ArgParser programArguments)
-    : _pcapFile(programArguments.getPCAPFilePath()),
-    _flowManager(
-        programArguments.getHost(),
-        programArguments.getPort(),
-        programArguments.getActiveTimeout(),
-        programArguments.getInactiveTimeout()
-    ) {
+PcapReader::PcapReader(std::string pcapFile)
+    : _pcapFile(pcapFile) {
     _errbuf[0] = '\0';
 }
 
 PcapReader::~PcapReader() {
-    if (_handle) {
-        pcap_close(_handle);
-    }
+    close();
 }
 
 bool PcapReader::open() {
-    _handle = pcap_open_offline(_pcapFile.c_str(), _errbuf);
-    if (_handle == NULL) {
+    handle = pcap_open_offline(_pcapFile.c_str(), _errbuf);
+    if (handle == NULL) {
         std::cerr << "Error: Cannot open file: " << _errbuf << std::endl;
         return false;
     }
@@ -39,9 +31,9 @@ bool PcapReader::open() {
 }
 
 void PcapReader::close() {
-    if (_handle) {
-        pcap_close(_handle);
-        _handle = nullptr;
+    if (handle) {
+        pcap_close(handle);
+        handle = nullptr;
     }
 }
 
@@ -50,28 +42,10 @@ bool PcapReader::isTcpPacket(const u_char* packet) {
     return (ipHeader->ip_p == IPPROTO_TCP);
 }
 
-void PcapReader::readAllPackets() {
-    struct pcap_pkthdr* header;
-    const u_char* packet;
-    int result;
 
-    while ((result = pcap_next_ex(_handle, &header, &packet)) > 0) {
-        processPacket(header, packet);
-    }
-
-    _flowManager.export_remaining();
-
-    if (result == -1) {
-        std::cerr << "Error reading the packet: " << pcap_geterr(_handle) << std::endl;
-        close();
-        ExitWith(ErrorCode::READING_PACKET_ERROR);
-    }
-    // if result -2 -> end of pcap file
-}
-
-void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* packet) {
+bool PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* packet, NetFlowV5record& record) {
     if (!isTcpPacket(packet)) {
-        return;
+        return false;
     }
 
     // Skip Ethernet header
@@ -85,7 +59,7 @@ void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
     unsigned int ipHeaderLength = ipHeader->ip_hl * 4; // Length of IP header
     if (ipHeaderLength < 20) {
         std::cerr << "Error: Invalid IP header length: " << ipHeaderLength << " bytes." << std::endl;
-        return;
+        return false;
     }
 
     const struct tcphdr* tcpHeader = reinterpret_cast<const struct tcphdr*>(ipOffset + ipHeaderLength);
@@ -99,7 +73,6 @@ void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
     uint32_t timestamp_ms = packet_timestamp.tv_sec * 1000 + packet_timestamp.tv_usec / 1000;
 
 
-    NetFlowV5record record;
     record.prot = IPPROTO_TCP;
     record.srcaddr = ntohl(ipHeader->ip_src.s_addr);
     record.dstaddr = ntohl(ipHeader->ip_dst.s_addr);
@@ -112,7 +85,7 @@ void PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
     record.dPkts = 1; // if new flow is created, number of packets will be 1
     record.Last = timestamp_ms;
 
-    _flowManager.add_or_update_flow(record);
+    return true;
 }
 
 

@@ -3,27 +3,23 @@
 
 #include <pcap.h>
 #include <string>
-#include "FlowManager.h"
-#include "ArgParser.h"
+#include "NetFlowV5record.h"
 
 class PcapReader {
-    public:
-        PcapReader(ArgParser programArguments);
-        ~PcapReader();
+public:
+    PcapReader(std::string pcapFile);
+    ~PcapReader();
 
-        bool open(); 
-        void close();
-        
-        void readAllPackets();
+    bool open();
+    void close();
 
-    private:
-        std::string _pcapFile;
-        pcap_t* _handle = nullptr;
-        char _errbuf[PCAP_ERRBUF_SIZE];
-        FlowManager _flowManager;
+    bool processPacket(const struct pcap_pkthdr* header, const u_char* packet, NetFlowV5record& record);
+    pcap_t* handle = nullptr;
 
-        bool isTcpPacket(const u_char* packet);
-        void processPacket(const struct pcap_pkthdr* header, const u_char* packet);
+private:
+    std::string _pcapFile;
+    char _errbuf[PCAP_ERRBUF_SIZE];
+    bool isTcpPacket(const u_char* packet);
 };
 
 #endif // PCAP_READER_H

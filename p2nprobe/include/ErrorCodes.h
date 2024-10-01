@@ -14,7 +14,9 @@ enum class ErrorCode {
 };
 
 inline void ExitWith(ErrorCode code) {
-    std::cerr << "Program terminated with: " << static_cast<int>(code) << "\n";
+    if (code != ErrorCode::SUCCESS) {
+        std::cerr << "Program terminated with: " << static_cast<int>(code) << "\n";
+    }
     exit(static_cast<int>(code));
 }
 

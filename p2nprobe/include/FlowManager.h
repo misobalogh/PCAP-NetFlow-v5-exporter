@@ -7,12 +7,16 @@
 #include <string>
 #include "FlowKey.h"
 #include "Flow.h"
+#include "ArgParser.h"
 #include "Exporter.h"
+#include "PcapReader.h"
+#include "ErrorCodes.h"
+#include "NetFlowV5Key.h"
+#include "NetFlowV5record.h"
 
 class FlowManager {
 public:
-    FlowManager(const std::string& collector_ip, int collector_port, int activeTimeout, int inactiveTimeout)
-        : exporter(collector_ip, collector_port), active_timeout(activeTimeout), inactive_timeout(inactiveTimeout) {} 
+    FlowManager(ArgParser programArguments);
     ~FlowManager();
 
     void add_or_update_flow(NetFlowV5record record);
@@ -21,11 +25,14 @@ public:
     void export_remaining();
     void dispose();
 
+    int startProcessing();
 
 private:
     uint32_t flow_count = 0;
     uint32_t flows_exported = 0;
     Exporter exporter;
+    PcapReader reader;
+
     int active_timeout;
     int inactive_timeout;
     std::unordered_map<std::string, Flow> flow_map;
