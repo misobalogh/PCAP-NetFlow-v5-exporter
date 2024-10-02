@@ -12,18 +12,27 @@
 #include "NetFlowV5Key.h"
 
 FlowManager::FlowManager(ArgParser programArguments)
-        : exporter(programArguments.getHost(), programArguments.getPort()),
-    reader(programArguments.getPCAPFilePath()),
-    active_timeout(programArguments.getActiveTimeout()),
-    inactive_timeout(programArguments.getInactiveTimeout()) {
+        : flow_count(0),  
+        flows_exported(0),
+        exporter(programArguments.getHost(), programArguments.getPort()),
+        reader(programArguments.getPCAPFilePath()),
+        active_timeout(programArguments.getActiveTimeout()),
+        inactive_timeout(programArguments.getInactiveTimeout())
+{
     if (!reader.open()) {
+        dispose();
         ExitWith(ErrorCode::FILE_OPEN_ERROR);
     }
-
 }
 
 FlowManager::~FlowManager() {
     dispose();
+}
+
+void FlowManager::dispose() {
+    flow_map.clear();
+    cached_flows.clear();
+    reader.close();
 }
 
 void FlowManager::add_or_update_flow(NetFlowV5record new_packet) {
@@ -42,22 +51,11 @@ void FlowManager::add_or_update_flow(NetFlowV5record new_packet) {
         flow_map.emplace(concat_key, Flow(key, new_packet));
         flow = flow_map.find(concat_key);
     }
-
-    // todo: check for expiration(if expired -> export_expired())
-    // if (flow->second.is_expired()) {
-    //     exporter.send_flow()
-    // }
-}
-
-void FlowManager::dispose() {
-    reader.close();
-    flow_map.clear();
 }
 
 
 void FlowManager::export_remaining() {
     if (flow_map.empty()) {
-        std::cerr << "No flows to export." << std::endl;
         return;
     }
 
@@ -65,6 +63,7 @@ void FlowManager::export_remaining() {
         exporter.send_flows(entry.second); 
         flows_exported++;
     }
+
     std::cout << "Total flows: " << flow_count << std::endl;
     std::cout << "Exported: " << flows_exported << std::endl;
 }
@@ -80,7 +79,38 @@ int FlowManager::startProcessing() {
         if (packetProcessed) {
             add_or_update_flow(record);
         }
+
+        uint32_t packet_timestamp = header->ts.tv_sec;
+        // uint32_t timestamp_ms = header->ts.tv_sec * 1000 + header->ts.tv_usec / 1000;
+
+        cache_expired(packet_timestamp);
+        export_cached();
     }
 
     return result;
+}
+
+void FlowManager::cache_expired(uint32_t current_time) {
+    for (auto it = flow_map.begin(); it != flow_map.end(); ) {
+        if (it->second.active_expired(current_time, active_timeout) ||
+            it->second.inactive_expired(current_time, inactive_timeout)) {
+            cached_flows.push_back(it->second);
+            it = flow_map.erase(it);    
+        }
+        else {
+            it++;
+        }
+    }
+}
+
+void FlowManager::export_cached() {
+    if (cached_flows.size() < MAX_CACHED_FLOWS) {
+        return;
+    }
+
+
+    flows_exported += cached_flows.size();
+    exporter.send_flows(cached_flows);
+    cached_flows.clear();
+
 }

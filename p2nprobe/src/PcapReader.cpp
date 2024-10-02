@@ -83,7 +83,7 @@ bool PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
     record.input = 0;
     record.dOctets = totalPacketLength;
     record.dPkts = 1; // if new flow is created, number of packets will be 1
-    record.Last = timestamp_ms;
+    record.Last = header->ts.tv_sec;
 
     return true;
 }

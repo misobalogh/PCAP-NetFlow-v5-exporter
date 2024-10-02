@@ -14,14 +14,19 @@
 #include "NetFlowV5Key.h"
 #include "NetFlowV5record.h"
 
+
+constexpr unsigned int MAX_CACHED_FLOWS = 30;
+
 class FlowManager {
 public:
     FlowManager(ArgParser programArguments);
     ~FlowManager();
 
     void add_or_update_flow(NetFlowV5record record);
-    void export_expired();
-    void export_full();
+
+    void cache_expired(uint32_t current_time);
+    void export_cached();
+
     void export_remaining();
     void dispose();
 
@@ -35,7 +40,9 @@ private:
 
     int active_timeout;
     int inactive_timeout;
+
     std::unordered_map<std::string, Flow> flow_map;
+    std::vector<Flow> cached_flows;
 };
 
 #endif // FLOW_MANAGER_H

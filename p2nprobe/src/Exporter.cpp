@@ -46,7 +46,7 @@ void Exporter::send_flows(const Flow& flow) {
 
     ssize_t sent = sendto(sock, buffer, length, 0, (struct sockaddr*)&server_addr, sizeof(server_addr));
     if (sent < 0) {
-        std::cerr << "Error sending flow." << std::endl;
+        std::cerr << "Error occurred when sending flow. Program continues." << std::endl;
     }
 }
 

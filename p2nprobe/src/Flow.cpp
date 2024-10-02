@@ -14,3 +14,11 @@ void Flow::update(uint8_t tcp_flags, uint32_t num_layer_3_bytes, uint32_t timest
     record.Last = timestamp;
 
 }
+
+bool Flow::active_expired(uint32_t current_time, uint32_t active_timeout) const {
+        return (current_time - record.First) >= active_timeout;
+    }
+
+bool Flow::inactive_expired(uint32_t current_time, uint32_t inactive_timeout) const {
+        return (current_time - record.Last) >= inactive_timeout;
+    }
