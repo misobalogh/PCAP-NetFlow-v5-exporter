@@ -23,10 +23,9 @@ int main(int argc, char* argv[]) {
 
     if (result == -1) {
         std::cerr << "Error reading a packet." << std::endl;
-        ExitWith(ErrorCode::READING_PACKET_ERROR);
+        return result;
     }
     // result -2 means end of pcap file -> no error
     // reulst 0 also means no error
-
-    ExitWith(ErrorCode::SUCCESS);
+    return 0;
 }

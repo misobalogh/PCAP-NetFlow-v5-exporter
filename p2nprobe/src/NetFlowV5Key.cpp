@@ -4,13 +4,11 @@
 #include "NetFlowV5Key.h"
 
 NetFlowV5Key::NetFlowV5Key(NetFlowV5record record) {
-    ingress_interface = record.input;
     src_ip = record.srcaddr;
     dst_ip = record.dstaddr;     
     protocol = record.prot;    
     src_port = record.srcport;   
     dst_port = record.dstport;   
-    type_of_service = record.tos;
 }
 
 std::string NetFlowV5Key::concatToString() const {
@@ -19,8 +17,7 @@ std::string NetFlowV5Key::concatToString() const {
         << dst_ip << ":"
         << src_port << ":"
         << dst_port << ":"
-        << static_cast<int>(protocol) << ":"
-        << static_cast<int>(type_of_service);
+        << static_cast<int>(protocol);
     return oss.str();
 }
 
@@ -35,6 +32,5 @@ bool NetFlowV5Key::operator==(const FlowKey& other) const {
             dst_ip == otherKey->dst_ip &&
             src_port == otherKey->src_port &&
             dst_port == otherKey->dst_port &&
-            protocol == otherKey->protocol &&
-            type_of_service == otherKey->type_of_service);
+            protocol == otherKey->protocol);
 }

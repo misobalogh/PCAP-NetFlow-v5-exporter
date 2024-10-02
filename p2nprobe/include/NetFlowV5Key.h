@@ -10,13 +10,11 @@
 // https://en.wikipedia.org/wiki/NetFlow#Network_flows
 class NetFlowV5Key : public FlowKey {
     public:
-        uint16_t ingress_interface; // 1.
         std::string src_ip;         // 2.
         std::string dst_ip;         // 3.
         uint8_t protocol;           // 4. 
         uint16_t src_port;          // 5.
         uint16_t dst_port;          // 6.
-        uint8_t type_of_service;    // 7.
 
         NetFlowV5Key(NetFlowV5record record);
 
