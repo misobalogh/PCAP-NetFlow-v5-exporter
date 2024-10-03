@@ -41,6 +41,10 @@ private:
     int active_timeout;
     int inactive_timeout;
 
+    bool time_start_set;
+    uint32_t time_start;
+    uint32_t time_end;
+
     std::unordered_map<std::string, Flow> flow_map;
     std::vector<Flow> cached_flows;
 };
