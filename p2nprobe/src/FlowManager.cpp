@@ -71,6 +71,9 @@ void FlowManager::export_remaining() {
 
     for (const auto& entry : flow_map) {
         cached_flows.push_back(entry.second);
+        if (cached_flows.size() == MAX_CACHED_FLOWS) {
+            export_cached();
+        }
     }
 
     export_cached();
@@ -90,7 +93,6 @@ int FlowManager::startProcessing() {
         if (packetProcessed) {
             add_or_update_flow(record);
         }
-
         uint32_t packet_timestamp = header->ts.tv_sec;
         // uint32_t timestamp_ms = header->ts.tv_sec * 1000 + header->ts.tv_usec / 1000;
 
@@ -103,12 +105,16 @@ int FlowManager::startProcessing() {
     return result;
 }
 
+// https://stackoverflow.com/a/1604632
 void FlowManager::cache_expired(uint32_t current_time) {
     for (auto entry = flow_map.begin(); entry != flow_map.end(); ) {
         if (entry->second.active_expired(current_time, active_timeout) ||
             entry->second.inactive_expired(current_time, inactive_timeout)) {
             cached_flows.push_back(entry->second);
             entry = flow_map.erase(entry);    
+            if (cached_flows.size() == MAX_CACHED_FLOWS) {
+                break;
+            }
         }
         else {
             entry++;
@@ -117,8 +123,12 @@ void FlowManager::cache_expired(uint32_t current_time) {
 }
 
 void FlowManager::export_cached() {
+    if (cached_flows.size() <= 0) {
+        return;
+    }
+    
     flows_exported += cached_flows.size();
-    exporter.send_flows(cached_flows, time_start, time_end);
-    cached_flows.clear();
 
-}
+    exporter.export_flows(cached_flows, time_start, time_end);
+    cached_flows.clear();
+}   

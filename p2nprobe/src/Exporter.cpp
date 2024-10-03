@@ -30,30 +30,31 @@ void Exporter::close_socket() {
     }
 }
 
-void Exporter::send_flows(const std::vector<Flow>& flows, uint32_t time_start, uint32_t time_end) {
+void Exporter::export_flows(const std::vector<Flow>& flows, uint32_t time_start, uint32_t time_end) {
 
-    uint8_t buffer[DATAGRAM_SIZE];
-    format_header(buffer, flows.size(), time_start, time_end);
+    uint16_t flow_count = flows.size();
+    size_t datagram_size = sizeof(NetFlowV5header) + sizeof(NetFlowV5record) * flow_count;
+    uint8_t buffer[datagram_size];
+    
+    format_header(buffer, flow_count, time_start, time_end);
 
-    size_t length = 0;
     size_t offset = sizeof(NetFlowV5header);
     for (const auto& flow : flows) {
-        format_record(flow.record, buffer, length, offset);
+        format_record(flow.record, buffer, offset);
     }
-    // send_flow(flows);
-    // send_flows(flow);
+
+    
+    send(buffer, datagram_size);
 }
 
-void Exporter::send_flow(const Flow& flow) {
-    flow_sequence += 1;
-    uint8_t buffer[DATAGRAM_SIZE];
-    size_t length = 0;
+void Exporter::send(uint8_t* buffer, size_t buffer_size) {
+    flow_sequence++;
 
-    if (length == 0) {
+    if (buffer_size == 0) {
         return;
     }
 
-    ssize_t sent = sendto(sock, buffer, length, 0, (struct sockaddr*)&server_addr, sizeof(server_addr));
+    ssize_t sent = sendto(sock, buffer, buffer_size, 0, (struct sockaddr*)&server_addr, sizeof(server_addr));
     if (sent < 0) {
         std::cerr << "Error occurred when sending flow. Program continues. Flow seq: " << flow_sequence << std::endl;
     }
@@ -76,7 +77,7 @@ void Exporter::format_header(uint8_t* buffer, uint16_t flow_count, uint32_t time
     size_t offset = sizeof(NetFlowV5header);
 }
 
-void Exporter::format_record(NetFlowV5record record, uint8_t* buffer, size_t& length, size_t offset) {
+void Exporter::format_record(NetFlowV5record record, uint8_t* buffer, size_t &offset) {
 
     record.srcaddr = htonl(record.srcaddr); 
     record.dstaddr = htonl(record.dstaddr);
@@ -98,9 +99,7 @@ void Exporter::format_record(NetFlowV5record record, uint8_t* buffer, size_t& le
     record.dst_mask = record.dst_mask;
 
     memcpy(buffer + offset, &record, sizeof(NetFlowV5record));
-    offset += sizeof(NetFlowV5record); 
-
-    length = offset;
+    offset += sizeof(NetFlowV5record);
 }
 
 

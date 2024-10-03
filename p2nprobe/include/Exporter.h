@@ -10,7 +10,6 @@
 
 #include "Flow.h"
 
-constexpr size_t DATAGRAM_SIZE = sizeof(NetFlowV5header) + sizeof(NetFlowV5record);
 constexpr uint16_t VERSION_5 = 5;
 
 class Exporter {
@@ -18,15 +17,15 @@ public:
     Exporter(const std::string& collector_ip, int collector_port);
     ~Exporter();
 
-    void send_flows(const std::vector<Flow>& flows, uint32_t time_start, uint32_t time_end);
-    void send_flow(const Flow& flow);
+    void export_flows(const std::vector<Flow>& flows, uint32_t time_start, uint32_t time_end);
 
 private:
     int create_socket();
     void close_socket();
 
+    void send(uint8_t* buffer, size_t buffer_size);
     void format_header(uint8_t* buffer, uint16_t flow_count, uint32_t time_start, uint32_t time_end);
-    void format_record(NetFlowV5record record, uint8_t* buffer, size_t& length, size_t offset);
+    void format_record(NetFlowV5record record, uint8_t* buffer, size_t &offset);
 
     uint32_t flow_sequence;
     int sock;
