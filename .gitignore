@@ -33,3 +33,5 @@
 
 *.pcap
 .vscode
+
+nfcapd/
