@@ -56,11 +56,23 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
         } 
         // Active timeout
         else if (arg == "-a" && i + 1 < argc) {
-            activeTimeout = std::stoi(argv[++i]);
+            try {
+                activeTimeout = std::stoi(argv[++i]);
+            }
+            catch (const std::out_of_range& e) {
+                std::cerr << "Error: Could not parse active timeout: out of range.\n";
+                ExitWith(ErrorCode::INTERNAL_ERROR);
+            }
         }
         // Inactive timeour
         else if (arg == "-i" && i + 1 < argc) {
-            inactiveTimeout = std::stoi(argv[++i]);
+            try {
+                inactiveTimeout = std::stoi(argv[++i]);
+            }
+            catch (const std::out_of_range& e) {
+                std::cerr << "Error: Could not parse active timeout: out of range.\n";
+                ExitWith(ErrorCode::INTERNAL_ERROR);
+            }
         }
         // Path to PCAP file
         else if (!pcapSetFlag) {

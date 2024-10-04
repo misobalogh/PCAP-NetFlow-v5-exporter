@@ -38,8 +38,8 @@ private:
     Exporter exporter;
     PcapReader reader;
 
-    int active_timeout;
-    int inactive_timeout;
+    int active_timeout_ms;
+    int inactive_timeout_ms;
 
     bool time_start_set;
     uint32_t time_start;

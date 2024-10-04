@@ -69,8 +69,7 @@ bool PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
     }
 
     uint32_t totalPacketLength = header->len - ETHERNET_HEADER_SIZE;
-    struct timeval packet_timestamp = header->ts;
-    uint32_t timestamp_ms = packet_timestamp.tv_sec * 1000 + packet_timestamp.tv_usec / 1000;
+    uint32_t timestamp_ms = header->ts.tv_sec * 1000 + header->ts.tv_usec / 1000;
 
 
     record.prot = IPPROTO_TCP;
@@ -83,7 +82,7 @@ bool PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
     record.input = 0;
     record.dOctets = totalPacketLength;
     record.dPkts = 1; // if new flow is created, number of packets will be 1
-    record.Last = header->ts.tv_sec;
+    record.Last = timestamp_ms;
 
     return true;
 }

@@ -33,30 +33,29 @@ void Exporter::close_socket() {
 void Exporter::export_flows(const std::vector<Flow>& flows, uint32_t time_start, uint32_t time_end) {
 
     uint16_t flow_count = flows.size();
+
     size_t datagram_size = sizeof(NetFlowV5header) + sizeof(NetFlowV5record) * flow_count;
     uint8_t buffer[datagram_size];
     
     format_header(buffer, flow_count, time_start, time_end);
+    flow_sequence += flow_count;
 
     size_t offset = sizeof(NetFlowV5header);
     for (const auto& flow : flows) {
-        format_record(flow.record, buffer, offset);
+        format_record(flow.record, buffer, offset, time_start);
     }
-
     
     send(buffer, datagram_size);
 }
 
 void Exporter::send(uint8_t* buffer, size_t buffer_size) {
-    flow_sequence++;
-
     if (buffer_size == 0) {
         return;
     }
 
     ssize_t sent = sendto(sock, buffer, buffer_size, 0, (struct sockaddr*)&server_addr, sizeof(server_addr));
     if (sent < 0) {
-        std::cerr << "Error occurred when sending flow. Program continues. Flow seq: " << flow_sequence << std::endl;
+        std::cerr << "Error occurred when sending flow. Program continues." << std::endl;
     }
 }
 
@@ -64,30 +63,36 @@ void Exporter::format_header(uint8_t* buffer, uint16_t flow_count, uint32_t time
     NetFlowV5header header;
     header.version = htons(VERSION_5);
     header.count = htons(flow_count); 
-    header.SysUptime = htonl(time_end-time_start);
-    header.unix_secs = htonl(time(nullptr));
-    header.unix_nsecs = htonl(0); 
+    header.SysUptime = htonl(time_end - time_start);
+    struct timespec ts;
+    if (clock_gettime(CLOCK_REALTIME, &ts) == 0) {
+        header.unix_secs = htonl(ts.tv_sec);
+        header.unix_nsecs = htonl(ts.tv_nsec);
+    }
+    else {
+        header.unix_secs = htonl(0);
+        header.unix_nsecs = htonl(0);
+    }
     header.flow_sequence = htonl(flow_sequence);
     header.engine_type = 0;
     header.engine_id = 0; 
     header.sampling_interval = 0; 
 
     memcpy(buffer, &header, sizeof(NetFlowV5header));
-
-    size_t offset = sizeof(NetFlowV5header);
 }
 
-void Exporter::format_record(NetFlowV5record record, uint8_t* buffer, size_t &offset) {
+void Exporter::format_record(NetFlowV5record record, uint8_t* buffer, size_t &offset, uint32_t time_start) {
 
-    record.srcaddr = htonl(record.srcaddr); 
+    std::cout << "First: " << record.First << " Last: "<< record.Last << std::endl;
+    record.srcaddr = htonl(record.srcaddr);
     record.dstaddr = htonl(record.dstaddr);
     record.nexthop = htonl(record.nexthop);
     record.input = htons(record.input);
     record.output = htons(record.output);
     record.dPkts = htonl(record.dPkts);
     record.dOctets = htonl(record.dOctets);
-    record.First = htonl(record.First);
-    record.Last = htonl(record.Last);
+    record.First = htonl(record.First - time_start);
+    record.Last = htonl(record.Last - time_start);
     record.srcport = htons(record.srcport);
     record.dstport = htons(record.dstport);
     record.tcp_flags = record.tcp_flags;

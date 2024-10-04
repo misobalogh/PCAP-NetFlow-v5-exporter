@@ -25,7 +25,7 @@ private:
 
     void send(uint8_t* buffer, size_t buffer_size);
     void format_header(uint8_t* buffer, uint16_t flow_count, uint32_t time_start, uint32_t time_end);
-    void format_record(NetFlowV5record record, uint8_t* buffer, size_t &offset);
+    void format_record(NetFlowV5record record, uint8_t* buffer, size_t &offset, uint32_t time_start);
 
     uint32_t flow_sequence;
     int sock;

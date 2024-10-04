@@ -16,8 +16,8 @@ FlowManager::FlowManager(ArgParser programArguments)
     flows_exported(0),
     exporter(programArguments.getHost(), programArguments.getPort()),
     reader(programArguments.getPCAPFilePath()),
-    active_timeout(programArguments.getActiveTimeout()),
-    inactive_timeout(programArguments.getInactiveTimeout()),
+    active_timeout_ms(programArguments.getActiveTimeout() * 1000),
+    inactive_timeout_ms(programArguments.getInactiveTimeout() * 1000),
     time_start_set(false),
     time_start(0),
     time_end(0)
@@ -93,10 +93,10 @@ int FlowManager::startProcessing() {
         if (packetProcessed) {
             add_or_update_flow(record);
         }
-        uint32_t packet_timestamp = header->ts.tv_sec;
-        // uint32_t timestamp_ms = header->ts.tv_sec * 1000 + header->ts.tv_usec / 1000;
 
-        cache_expired(packet_timestamp);
+        uint32_t timestamp_ms = header->ts.tv_sec * 1000 + header->ts.tv_usec / 1000;
+
+        cache_expired(timestamp_ms);
         if (cached_flows.size() == MAX_CACHED_FLOWS) {
             export_cached();
         }
@@ -108,8 +108,8 @@ int FlowManager::startProcessing() {
 // https://stackoverflow.com/a/1604632
 void FlowManager::cache_expired(uint32_t current_time) {
     for (auto entry = flow_map.begin(); entry != flow_map.end(); ) {
-        if (entry->second.active_expired(current_time, active_timeout) ||
-            entry->second.inactive_expired(current_time, inactive_timeout)) {
+        if (entry->second.active_expired(current_time, active_timeout_ms) ||
+            entry->second.inactive_expired(current_time, inactive_timeout_ms)) {
             cached_flows.push_back(entry->second);
             entry = flow_map.erase(entry);    
             if (cached_flows.size() == MAX_CACHED_FLOWS) {

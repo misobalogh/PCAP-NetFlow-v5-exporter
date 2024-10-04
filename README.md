@@ -7,6 +7,15 @@
 - [ ] add headers with name and descriptioin
 - [ ] remove all outputs to console
 
+## Testing:
+
+sudo tcpdump -i any udp port 9995 -w netflow_capture.pcap
+- check in wireshark
+- python3 netflowV5hexdump.py
+
+
+
+
 
 ## Bibliography
 - https://cplusplus.com/reference/
