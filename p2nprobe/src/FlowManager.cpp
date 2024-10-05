@@ -7,9 +7,8 @@
 #include <sys/time.h> 
 #include <cstring>
 
-
 #include "FlowManager.h"
-#include "NetFlowV5Key.h"
+#include "ErrorCodes.h"
 
 FlowManager::FlowManager(ArgParser programArguments)
     : flow_count(0),
@@ -38,45 +37,43 @@ void FlowManager::dispose() {
     reader.close();
 }
 
-void FlowManager::add_or_update_flow(NetFlowV5record new_packet) {
+void FlowManager::add_or_update_flow(NetFlowV5record new_record) {
     if (!time_start_set) {
         time_start_set = true;
-        time_start = new_packet.Last;
+        time_start = new_record.Last;
     }
+    time_end = new_record.Last;
 
-    time_end = new_packet.Last;
-
-    NetFlowV5Key key(new_packet);
+    NetFlowV5Key key(new_record);
     std::string concat_key = key.concatToString();
-    auto flow = flow_map.find(concat_key);
 
-    if (flow != flow_map.end() && concat_key == flow->first) {
-        // update existing one
-        flow->second.update(new_packet.tcp_flags, new_packet.dOctets, new_packet.Last);
-    }
-    else {
-        // create new
+    auto it = flow_map.find(concat_key);
+    if (it != flow_map.end() && concat_key == it->first) {
+        // Flow exists, update the existing flow in the list
+        it->second->update(new_record.tcp_flags, new_record.dOctets, new_record.Last);
+    } else {
+        // New flow, add it to the list and map
         flow_count++;
-        new_packet.First = new_packet.Last;
-        flow_map.emplace(concat_key, Flow(key, new_packet));
-        flow = flow_map.find(concat_key);
+        new_record.First = new_record.Last;
+        flow_list.push_back(Flow(key, new_record));  
+        FlowList::iterator list_it = --flow_list.end();  
+        flow_map[concat_key] = list_it;  
     }
 }
 
-
 void FlowManager::export_remaining() {
-    if (flow_map.empty()) {
+    if (flow_list.empty()) {
         return;
     }
 
-    for (const auto& entry : flow_map) {
-        cached_flows.push_back(entry.second);
+    for (const auto& flow : flow_list) {
+        cached_flows.push_back(flow); 
         if (cached_flows.size() == MAX_CACHED_FLOWS) {
-            export_cached();
+            export_cached(); 
         }
     }
 
-    export_cached();
+    export_cached();  
 
     std::cout << "Total flows: " << flow_count << std::endl;
     std::cout << "Exported: " << flows_exported << std::endl;
@@ -107,23 +104,28 @@ int FlowManager::startProcessing() {
 
 // https://stackoverflow.com/a/1604632
 void FlowManager::cache_expired(uint32_t current_time) {
-    for (auto entry = flow_map.begin(); entry != flow_map.end(); ) {
-        if (entry->second.active_expired(current_time, active_timeout_ms) ||
-            entry->second.inactive_expired(current_time, inactive_timeout_ms)) {
-            cached_flows.push_back(entry->second);
-            entry = flow_map.erase(entry);    
+    for (auto it = flow_list.begin(); it != flow_list.end(); ) {
+        if (it->active_expired(current_time, active_timeout_ms) ||
+            it->inactive_expired(current_time, inactive_timeout_ms)) {
+            
+            cached_flows.push_back(*it);    
+
+            flow_map.erase(it->key.concatToString());  
+            it = flow_list.erase(it);       
+            
             if (cached_flows.size() == MAX_CACHED_FLOWS) {
-                break;
+                break;  
             }
         }
         else {
-            entry++;
+            ++it;
         }
     }
 }
 
+
 void FlowManager::export_cached() {
-    if (cached_flows.size() <= 0) {
+    if (cached_flows.empty()) {
         return;
     }
     
