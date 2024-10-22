@@ -1,24 +1,42 @@
+////////////////////////////////////////////////////
+// File: main.cpp 
+// Pcap Netflow v5 Exporter
+// Author: Michal Balogh, xbalog06
+// Date: 14.10.2024
+////////////////////////////////////////////////////
+
 #include <iostream>
 
 #include "ErrorCodes.h"
 #include "ArgParser.h"
 #include "FlowManager.h"
 
+/**
+ * @brief Main entry point of the program
+ *
+ * @return 0 if the program was successful, -1 if there was an error reading a packet
+ */
 int main(int argc, char* argv[]) {
     ArgParser programArguments(argc, argv);
 
-    std::cout << "Host: " << programArguments.getHost() << "\n";
-    std::cout << "Port: " << programArguments.getPort() << "\n";
-    std::cout << "PCAP File Path: " << programArguments.getPCAPFilePath() << "\n";
-    std::cout << "Active Timeout: " << programArguments.getActiveTimeout() << " seconds\n";
-    std::cout << "Inactive Timeout: " << programArguments.getInactiveTimeout() << " seconds\n\n";
+    // std::cout << "Host: " << programArguments.getHost() << "\n";
+    // std::cout << "Port: " << programArguments.getPort() << "\n";
+    // std::cout << "PCAP File Path: " << programArguments.getPCAPFilePath() << "\n";
+    // std::cout << "Active Timeout: " << programArguments.getActiveTimeout() << " seconds\n";
+    // std::cout << "Inactive Timeout: " << programArguments.getInactiveTimeout() << " seconds\n\n";
 
     int result;
+
+    // Create the flow manager and start processing the packets
     FlowManager manager(programArguments);
 
+    // Error while reading packet results in -1 and program termination
     result = manager.startProcessing();
 
+    // After all packets are processed and aggregated, export the remaining flows
     manager.export_remaining();
+
+    // Cleanup
     manager.dispose();
 
     if (result == -1) {

@@ -1,3 +1,10 @@
+////////////////////////////////////////////////////
+// File: Flow.h
+// Pcap Netflow v5 Exporter
+// Author: Michal Balogh, xbalog06
+// Date: 14.10.2024
+////////////////////////////////////////////////////
+
 #ifndef FLOW_H
 #define FLOW_H
 
@@ -5,8 +12,12 @@
 #include <memory>
 
 #include "NetFlowV5Key.h"
-#include "NetFlowV5datagram.h"
+#include "NetFlowV5record.h"
+#include "NetFlowV5header.h"
 
+/**
+ * @brief Class representing flow. Primary stores data from agregated packets and updates them.
+ */
 class Flow {
 public:
     NetFlowV5Key key;

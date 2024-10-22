@@ -1,3 +1,11 @@
+////////////////////////////////////////////////////
+// File: ArgParser.cpp
+// Pcap Netflow v5 Exporter
+// Author: Michal Balogh, xbalog06
+// Date: 14.10.2024
+////////////////////////////////////////////////////
+
+
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
@@ -5,15 +13,39 @@
 #include "ArgParser.h"
 #include "ErrorCodes.h" 
 
+// Maximum and minimum possible port number
 const unsigned int PORT_MIN = 1;
 const unsigned int PORT_MAX = 65535; 
 
+
+/**
+ * @brief Constructor for the ArgParser class.
+ * Constructs the ArgParser object and parses the command line arguments.
+ * They are then stored in the object and can be accessed using the getter methods.
+ *
+ * @param argc Number of command line arguments
+ * @param argv Array of command line arguments
+ *
+ * @return void
+ */
 ArgParser::ArgParser(int argc, char* argv[]) {
     activeTimeout = DEFAULT_ACTIVE_TIMEOUT;
     inactiveTimeout = DEFAULT_INACTIVE_TIMEOUT;
     parseArgs(argc, argv);
 }
 
+/**
+ * @brief Parses the host and port part of the collector address.
+ * Format of the collector address is host:port
+ *
+ * @param collectorAdress Collector address in the format host:port
+ * @param colonIndex Index of the colon character in the collector address
+ *
+ * @return void
+ *
+ * @exception std::invalid_argument If the port part is not a number
+ * @exception std::out_of_range If the port number is out of possible range (1-65535)
+ */
 void ArgParser::parseHostAndPort(const std::string& collectorAdress, size_t colonIndex) {
     
     // Split into host and port part
@@ -27,25 +59,41 @@ void ArgParser::parseHostAndPort(const std::string& collectorAdress, size_t colo
     }
     catch (const std::invalid_argument& e) {
         std::cerr << "Error: Could not parse number of port: Port is not a number.\n";
-        ExitWith(ErrorCode::INVALID_ARGS); 
+        printUsage();
+        ExitWith(ErrorCode::INVALID_ARGS);
     } catch (const std::out_of_range& e) {
         std::cerr << "Error: Could not parse number of port: out of range.\n";
-        ExitWith(ErrorCode::INTERNAL_ERROR); 
+        printUsage();
+        ExitWith(ErrorCode::INTERNAL_ERROR);
     }
 
     collectorHost = host;
     collectorPort = port;
 }
 
+
+/**
+ * @brief Parses the command line arguments by iterating through them and trying to parse them.
+ * If the argument is not valid, the program exits with an error message.
+ *
+ * @param argc Number of command line arguments
+ * @param argv Array of command line arguments
+ *
+ * @return void
+ *
+ * @exception std::out_of_range if the active or inactive timeout is out of range
+ */
 void ArgParser::parseArgs(int argc, char* argv[]) {
     const int NUM_MANDATORY_ARGS = 2;
     if (argc < NUM_MANDATORY_ARGS + 1) {
-        std::cerr << "Usage: ./p2nprobe <host>:<port> <pcap_file_path> [-a <active_timeout> -i <inactive_timeout>]\n";
+        printUsage();
         ExitWith(ErrorCode::INVALID_ARGS); 
     }
 
+    // Flag for checking if the PCAP file path was already set
     bool pcapSetFlag = false;
 
+    // Iterate through the arguments and parse them
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
 
@@ -81,38 +129,76 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
         }
         else {
             std::cerr << "Error: Invalid argument provided: " << arg << "\n";
-            std::cerr << "Usage: ./p2nprobe <host>:<port> <pcap_file_path> [-a <active_timeout> -i <inactive_timeout>]\n";
+            printUsage();
             ExitWith(ErrorCode::INVALID_ARGS); 
         }
     }
 
+    // Check if the mandatory arguments were set
     if (collectorHost.empty() || pcapFilePath.empty()) {
         std::cerr << "Error: host:port and PCAP file path are mandatory.\n";
-        ExitWith(ErrorCode::INVALID_ARGS); 
+        printUsage();
+        ExitWith(ErrorCode::INVALID_ARGS);
     }
 
+    // Check valid range of port number
     if (collectorPort < PORT_MIN || collectorPort > PORT_MAX) {
-        std::cerr << "Error: Port number out of range ("<< PORT_MIN <<"-"<< PORT_MAX <<").\n";
-        ExitWith(ErrorCode::INVALID_ARGS); 
+        std::cerr << "Error: Port number out of range (" << PORT_MIN << "-" << PORT_MAX << ").\n";
+        printUsage();
+        ExitWith(ErrorCode::INVALID_ARGS);
     }
 }
 
+/**
+ * @brief Prints program usage to the standard error output.
+ *
+ * @return void
+ */
+void ArgParser::printUsage() const {
+    std::cerr << "Usage: ./p2nprobe <host>:<port> <pcap_file_path> [-a <active_timeout> -i <inactive_timeout>]\n";
+}
+
+/**
+ * @brief Getter method for the collector host. Mandatory argument.
+ *
+ * @return std::string Collector host
+ */
 std::string ArgParser::getHost() const {
     return collectorHost;
 }
 
+/**
+ * @brief Getter method for the collector port. Mandatory argument.
+ *
+ * @return int Collector port
+ */
 int ArgParser::getPort() const {
     return collectorPort;
 }
 
+/**
+ * @brief Getter method for the PCAP file path. Mandatory argument.
+ * 
+ * @return std::string PCAP file path
+ */
 std::string ArgParser::getPCAPFilePath() const {
     return pcapFilePath;
 }
 
+/**
+ * @brief Getter method for the active timeout if set, otherwise the default value.
+ *
+ * @return int Active timeout
+ */
 int ArgParser::getActiveTimeout() const {
     return activeTimeout;
 }
 
+/**
+ * @brief Getter method for the inactive timeout if set, otherwise the default value.
+ *
+ * @return int Inactive timeout
+ */
 int ArgParser::getInactiveTimeout() const {
     return inactiveTimeout;
 }

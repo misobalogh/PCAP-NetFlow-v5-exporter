@@ -1,3 +1,7 @@
+# Author: Michal Balogh, xbalog06
+# Project: PcapNetflowV5exporter
+# Date: 14-10-2024
+
 CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude -MMD -MP
 LDFLAGS = -lpcap

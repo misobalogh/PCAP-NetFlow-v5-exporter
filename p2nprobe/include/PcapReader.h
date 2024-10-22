@@ -1,3 +1,10 @@
+////////////////////////////////////////////////////
+// File: PcapReader.h
+// Pcap Netflow v5 Exporter
+// Author: Michal Balogh, xbalog06
+// Date: 14.10.2024
+////////////////////////////////////////////////////
+
 #ifndef PCAP_READER_H
 #define PCAP_READER_H
 
@@ -5,6 +12,9 @@
 #include <string>
 #include "NetFlowV5record.h"
 
+/**
+ * @brief Class for reading and processing packets from pcap file.
+ */
 class PcapReader {
 public:
     PcapReader(std::string pcapFile);
@@ -17,8 +27,9 @@ public:
     pcap_t* handle = nullptr;
 
 private:
-    std::string _pcapFile;
-    char _errbuf[PCAP_ERRBUF_SIZE];
+    std::string _pcapFile; // Name of the processed pcap file
+    char _errbuf[PCAP_ERRBUF_SIZE]; // Error buffer in case error occurs while processing packets
+
     bool isTcpPacket(const u_char* packet);
 };
 
