@@ -109,7 +109,8 @@ bool PcapReader::processPacket(const struct pcap_pkthdr* header, const u_char* p
     }
 
     uint32_t totalPacketLength = header->len - ETHERNET_HEADER_SIZE;
-    uint32_t timestamp_ms = header->ts.tv_sec * 1000 + header->ts.tv_usec / 1000; // convert timestamp to miliseconds
+    // convert seconds and microseconds to miliseconds
+    uint32_t timestamp_ms = header->ts.tv_sec * 1000LL + (header->ts.tv_usec / 1000);
 
 
     record.prot = IPPROTO_TCP;                          // Protocol

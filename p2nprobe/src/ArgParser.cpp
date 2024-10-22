@@ -118,7 +118,7 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
                 inactiveTimeout = std::stoi(argv[++i]);
             }
             catch (const std::out_of_range& e) {
-                std::cerr << "Error: Could not parse active timeout: out of range.\n";
+                std::cerr << "Error: Could not parse inactive timeout: out of range.\n";
                 ExitWith(ErrorCode::INTERNAL_ERROR);
             }
         }

@@ -5,7 +5,11 @@
 // Date: 14.10.2024
 ////////////////////////////////////////////////////
 
+#include <netdb.h> 
+#include <arpa/inet.h>
+
 #include "Exporter.h"
+
 
 /**
  * @brief Constructor of the class. Initialize socket for connection with collector.
@@ -16,12 +20,26 @@
 Exporter::Exporter(const std::string& collector_ip, int collector_port) {
     sock = create_socket();
 
+    // Try to resolve the host address
+    struct addrinfo hints;
+    struct addrinfo *result;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET; // for IPv4
+    hints.ai_socktype = SOCK_DGRAM; // UPD for Netflow
+
+    int status = getaddrinfo(collector_ip.c_str(), std::to_string(collector_port).c_str(), &hints, &result);
+    if (status != 0) {
+        std::cerr << "Error resolving host address: " << gai_strerror(status) << std::endl;
+        return;
+    }
+
+    // Set the resolved address
     memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_port = htons(collector_port);
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = inet_addr(collector_ip.c_str());
+    server_addr = *(reinterpret_cast<struct sockaddr_in*>(result->ai_addr));
 
     flow_sequence = 0;
+    
+    freeaddrinfo(result); // Clean up
 }
 
 /**
@@ -142,7 +160,6 @@ void Exporter::format_header(uint8_t* buffer, uint16_t flow_count, uint32_t time
 */
 void Exporter::format_record(NetFlowV5record record, uint8_t* buffer, size_t& offset, uint32_t time_start) {
 
-    std::cout << "First: " << record.First << " Last: "<< record.Last << std::endl;
     record.srcaddr = htonl(record.srcaddr);
     record.dstaddr = htonl(record.dstaddr);
     record.nexthop = htonl(record.nexthop);

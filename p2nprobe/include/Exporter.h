@@ -14,6 +14,7 @@
 #include <cstring> 
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h> 
 
 #include "Flow.h"

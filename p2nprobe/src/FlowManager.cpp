@@ -57,6 +57,18 @@ void FlowManager::dispose() {
 }
 
 /**
+ * @brief Get current time in miliseconds.
+ *
+ * @return Current time in miliseconds.
+ */
+uint32_t FlowManager::getCurrentTime() {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    uint32_t duration = tv.tv_sec * 1000LL + (tv.tv_usec / 1000);\
+    return duration;
+}
+
+/**
  * @brief Tries to find a flow by comparing their keys, if the flow is found, updates it.
  * If not, new flow is created.
  *
@@ -65,9 +77,9 @@ void FlowManager::dispose() {
  * @return void
  */
 void FlowManager::add_or_update_flow(NetFlowV5record new_record) {
-    if (!time_start_set) { // If its the first packet, sets the start time
-        time_start_set = true;
-        time_start = new_record.Last;
+    if (!time_start_set) { // Set the start time of the device
+            time_start = getCurrentTime();
+            time_start_set = true;
     }
     time_end = new_record.Last; // Update the end time with current timestamp
 
@@ -79,7 +91,8 @@ void FlowManager::add_or_update_flow(NetFlowV5record new_record) {
     if (it != flow_map.end() && concat_key == it->first) {
         // Flow exists, update the existing flow in the list
         it->second->update(new_record.tcp_flags, new_record.dOctets, new_record.Last); // it->seconds points to the entry in the list
-    } else {
+    }
+    else {
         // New flow, add it to the list and map
         flow_count++;
         new_record.First = new_record.Last;
@@ -106,9 +119,6 @@ void FlowManager::export_remaining() {
     }
 
     export_cached();  // Export remaining
-
-    std::cout << "Total flows: " << flow_count << std::endl;
-    std::cout << "Exported: " << flows_exported << std::endl;
 }
 
 /**

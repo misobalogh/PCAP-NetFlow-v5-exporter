@@ -63,6 +63,8 @@ private:
 
     // Hash table for finding flows fast based on their key, pointing to the list entries in double linked list
     std::unordered_map<std::string, FlowList::iterator> flow_map;
+
+    uint32_t getCurrentTime();
 };
 
 #endif // FLOW_MANAGER_H

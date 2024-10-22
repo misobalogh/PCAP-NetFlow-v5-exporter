@@ -3,8 +3,8 @@
 ## TODO:
 - [ ] unite style across files
 - [ ] check unused includes, functions, variables
-- [ ] add more comments
-- [ ] add headers with name and descriptioin
+- [x] add more comments
+- [x] add headers with name and descriptioin
 - [ ] remove all outputs to console
 
 ## Testing:
@@ -28,6 +28,7 @@ how to read pcap file in cpp
 - https://gist.github.com/voldemur/261b5bc42688b9cf425fbaedc2d5fcbe#file-pcap_reader-cpp
 
 - https://man7.org/linux/man-pages/man3/inet_ntop.3.html
+- https://man7.org/linux/man-pages/man3/getaddrinfo.3.html
 
 virtual classes in cpp
 - https://www.scaler.com/topics/virtual-base-class-in-cpp/
