@@ -35,6 +35,7 @@ private:
     void parseArgs(int argc, char* argv[]);
     void parseHostAndPort(const std::string& collectorAdress, size_t colonIndex);
     void printUsage() const;
+    void printHelp() const;
 
     // Mandatory args
     std::string collectorHost;

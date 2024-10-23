@@ -15,7 +15,18 @@
 
 // Maximum and minimum possible port number
 const unsigned int PORT_MIN = 1;
-const unsigned int PORT_MAX = 65535; 
+const unsigned int PORT_MAX = 65535;
+
+const std::string HELP_MESSAGE = R"(
+Arguments:
+    -h                       Display this help message and exit
+  Mandatory:
+    <host>:<port>            Address of the collector in format host:port
+    <pcap_file_path>         Path to PCAP file
+  Optional:
+    -a <active_timeout>      Active timeout in seconds (default: 60)
+    -i <inactive_timeout>    Inactive timeout in seconds (default: 60)
+)";
 
 
 /**
@@ -47,7 +58,7 @@ ArgParser::ArgParser(int argc, char* argv[]) {
  * @exception std::out_of_range If the port number is out of possible range (1-65535)
  */
 void ArgParser::parseHostAndPort(const std::string& collectorAdress, size_t colonIndex) {
-    
+
     // Split into host and port part
     std::string host = collectorAdress.substr(0, colonIndex);
     std::string port_str = collectorAdress.substr(colonIndex + 1);
@@ -61,7 +72,8 @@ void ArgParser::parseHostAndPort(const std::string& collectorAdress, size_t colo
         std::cerr << "Error: Could not parse number of port: Port is not a number.\n";
         printUsage();
         ExitWith(ErrorCode::INVALID_ARGS);
-    } catch (const std::out_of_range& e) {
+    }
+    catch (const std::out_of_range& e) {
         std::cerr << "Error: Could not parse number of port: out of range.\n";
         printUsage();
         ExitWith(ErrorCode::INTERNAL_ERROR);
@@ -87,7 +99,7 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
     const int NUM_MANDATORY_ARGS = 2;
     if (argc < NUM_MANDATORY_ARGS + 1) {
         printUsage();
-        ExitWith(ErrorCode::INVALID_ARGS); 
+        ExitWith(ErrorCode::INVALID_ARGS);
     }
 
     // Flag for checking if the PCAP file path was already set
@@ -97,11 +109,16 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
 
+        if (arg == "-h") {
+            printHelp();
+            ExitWith(ErrorCode::SUCCESS);  // Exit with success
+        }
+        
         size_t colonPos = arg.find(':');
         // Collector adress
         if (colonPos != std::string::npos) {
             parseHostAndPort(arg, colonPos);
-        } 
+        }
         // Active timeout
         else if (arg == "-a" && i + 1 < argc) {
             try {
@@ -130,7 +147,7 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
         else {
             std::cerr << "Error: Invalid argument provided: " << arg << "\n";
             printUsage();
-            ExitWith(ErrorCode::INVALID_ARGS); 
+            ExitWith(ErrorCode::INVALID_ARGS);
         }
     }
 
@@ -147,6 +164,18 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
         printUsage();
         ExitWith(ErrorCode::INVALID_ARGS);
     }
+}
+
+
+/**
+ * @brief Prints help message to the standard output.
+ *
+ * @return void
+ */
+void ArgParser::printHelp() const {
+    std::cout << "Pcap Netflow v5 Exporter" << std::endl;
+    printUsage();
+    std::cout << HELP_MESSAGE;
 }
 
 /**
@@ -178,7 +207,7 @@ int ArgParser::getPort() const {
 
 /**
  * @brief Getter method for the PCAP file path. Mandatory argument.
- * 
+ *
  * @return std::string PCAP file path
  */
 std::string ArgParser::getPCAPFilePath() const {
