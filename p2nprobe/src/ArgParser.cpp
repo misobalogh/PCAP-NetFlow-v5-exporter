@@ -39,9 +39,12 @@ Arguments:
  *
  * @return void
  */
-ArgParser::ArgParser(int argc, char* argv[]) {
-    activeTimeout = DEFAULT_ACTIVE_TIMEOUT;
-    inactiveTimeout = DEFAULT_INACTIVE_TIMEOUT;
+ArgParser::ArgParser(int argc, char* argv[])
+    : collectorHost(""),
+    collectorPort(0),
+    pcapFilePath(""),
+    activeTimeout(DEFAULT_ACTIVE_TIMEOUT),
+    inactiveTimeout(DEFAULT_INACTIVE_TIMEOUT) {
     parseArgs(argc, argv);
 }
 
@@ -113,7 +116,7 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
             printHelp();
             ExitWith(ErrorCode::SUCCESS);  // Exit with success
         }
-        
+
         size_t colonPos = arg.find(':');
         // Collector adress
         if (colonPos != std::string::npos) {

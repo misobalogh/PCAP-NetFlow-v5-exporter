@@ -47,8 +47,8 @@ private:
     static const int DEFAULT_INACTIVE_TIMEOUT = 60;
 
     // Optional args
-    int activeTimeout = DEFAULT_ACTIVE_TIMEOUT;
-    int inactiveTimeout = DEFAULT_INACTIVE_TIMEOUT;
+    int activeTimeout;
+    int inactiveTimeout;
 };
 
 #endif // ARG_PARSER_H

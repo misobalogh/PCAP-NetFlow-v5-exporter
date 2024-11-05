@@ -15,6 +15,7 @@
  * 
  */
 NetFlowV5Key::NetFlowV5Key(NetFlowV5record record) {
+    // TODO: src ip and dst ip should be in network byte order? and definitely not string
     src_ip = record.srcaddr;
     dst_ip = record.dstaddr;     
     protocol = record.prot;    

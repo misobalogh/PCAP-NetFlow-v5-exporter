@@ -18,6 +18,7 @@
  * @param collector_port Port of the collector
  */
 Exporter::Exporter(const std::string& collector_ip, int collector_port) {
+    flow_sequence = 0;
     sock = create_socket();
 
     // Try to resolve the host address
