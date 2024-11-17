@@ -121,7 +121,7 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
         else if (arg == "-a" && i + 1 < argc) {
             try {
                 activeTimeout = std::stoi(argv[++i]);
-                if (activeTimeout <= 0) {
+                if (activeTimeout < 0) {
                     std::cerr << "Error: Active timeout must be a positive number.\n";
                     ExitWith(ErrorCode::INVALID_ARGS);
                 }
@@ -135,7 +135,7 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
         else if (arg == "-i" && i + 1 < argc) {
             try {
                 inactiveTimeout = std::stoi(argv[++i]);
-                if (inactiveTimeout <= 0) {
+                if (inactiveTimeout < 0) {
                     std::cerr << "Error: Inactive timeout must be a positive number.\n";
                     ExitWith(ErrorCode::INVALID_ARGS);
                 }
