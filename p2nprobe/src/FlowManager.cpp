@@ -64,7 +64,7 @@ void FlowManager::dispose() {
 uint32_t FlowManager::getCurrentTime() {
     struct timeval tv;
     gettimeofday(&tv, nullptr);
-    uint32_t duration = tv.tv_sec * 1000LL + (tv.tv_usec / 1000);\
+    uint32_t duration = tv.tv_sec * 1000LL + (tv.tv_usec / 1000);
     return duration;
 }
 
@@ -163,7 +163,7 @@ void FlowManager::cache_expired(uint32_t current_time) {
         // If flow exceeds active or inactive timeout, cache it.
         if (it->active_expired(current_time, active_timeout_ms) ||
             it->inactive_expired(current_time, inactive_timeout_ms)) {
-
+            printf("Flow expired: %s\n", it->key.concatToString().c_str());
             // Cache the flow
             cached_flows.push_back(*it);
 

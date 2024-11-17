@@ -99,11 +99,6 @@ void ArgParser::parseHostAndPort(const std::string& collectorAdress, size_t colo
  * @exception std::out_of_range if the active or inactive timeout is out of range
  */
 void ArgParser::parseArgs(int argc, char* argv[]) {
-    const int NUM_MANDATORY_ARGS = 2;
-    if (argc < NUM_MANDATORY_ARGS + 1) {
-        printUsage();
-        ExitWith(ErrorCode::INVALID_ARGS);
-    }
 
     // Flag for checking if the PCAP file path was already set
     bool pcapSetFlag = false;
@@ -113,7 +108,7 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
         std::string arg = argv[i];
 
         if (arg == "-h") {
-            printHelp();
+            printHelp(); 
             ExitWith(ErrorCode::SUCCESS);  // Exit with success
         }
 
@@ -126,20 +121,28 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
         else if (arg == "-a" && i + 1 < argc) {
             try {
                 activeTimeout = std::stoi(argv[++i]);
+                if (activeTimeout <= 0) {
+                    std::cerr << "Error: Active timeout must be a positive number.\n";
+                    ExitWith(ErrorCode::INVALID_ARGS);
+                }
             }
-            catch (const std::out_of_range& e) {
-                std::cerr << "Error: Could not parse active timeout: out of range.\n";
-                ExitWith(ErrorCode::INTERNAL_ERROR);
+            catch (const std::exception& e) {
+                std::cerr << "Error: Invalid active timeout value.\n";
+                ExitWith(ErrorCode::INVALID_ARGS);
             }
         }
         // Inactive timeour
         else if (arg == "-i" && i + 1 < argc) {
             try {
                 inactiveTimeout = std::stoi(argv[++i]);
+                if (inactiveTimeout <= 0) {
+                    std::cerr << "Error: Inactive timeout must be a positive number.\n";
+                    ExitWith(ErrorCode::INVALID_ARGS);
+                }
             }
-            catch (const std::out_of_range& e) {
-                std::cerr << "Error: Could not parse inactive timeout: out of range.\n";
-                ExitWith(ErrorCode::INTERNAL_ERROR);
+            catch (const std::exception& e) {
+                std::cerr << "Error: Invalid inactive timeout value.\n";
+                ExitWith(ErrorCode::INVALID_ARGS);
             }
         }
         // Path to PCAP file
@@ -164,6 +167,12 @@ void ArgParser::parseArgs(int argc, char* argv[]) {
     // Check valid range of port number
     if (collectorPort < PORT_MIN || collectorPort > PORT_MAX) {
         std::cerr << "Error: Port number out of range (" << PORT_MIN << "-" << PORT_MAX << ").\n";
+        printUsage();
+        ExitWith(ErrorCode::INVALID_ARGS);
+    }
+
+    const int NUM_MANDATORY_ARGS = 2;
+    if (argc < NUM_MANDATORY_ARGS + 1) {
         printUsage();
         ExitWith(ErrorCode::INVALID_ARGS);
     }
