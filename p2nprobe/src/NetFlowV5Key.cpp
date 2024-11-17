@@ -7,19 +7,18 @@
 
 #include <functional>
 #include <sstream>
+#include <arpa/inet.h>
 
 #include "NetFlowV5Key.h"
-
 /**
  * @brief Constructor for NetFlowV5Key. NetFlowV5Key is constructed from data in NetFlowV5record.
  * 
  */
 NetFlowV5Key::NetFlowV5Key(NetFlowV5record record) {
-    // TODO: src ip and dst ip should be in network byte order? and definitely not string
     src_ip = record.srcaddr;
     dst_ip = record.dstaddr;     
     protocol = record.prot;    
-    src_port = record.srcport;   
+    src_port = record.srcport;      
     dst_port = record.dstport;   
 }
 
@@ -29,9 +28,21 @@ NetFlowV5Key::NetFlowV5Key(NetFlowV5record record) {
  * @return std::string 
  */
 std::string NetFlowV5Key::concatToString() const {
+    char src_ip_str[INET_ADDRSTRLEN];
+    char dst_ip_str[INET_ADDRSTRLEN];
+
+    struct in_addr src_addr, dst_addr;
+    // Convert IP addresses to network byte order
+    src_addr.s_addr = htonl(src_ip);
+    dst_addr.s_addr = htonl(dst_ip);
+
+    // Convert IP addresses to string
+    inet_ntop(AF_INET, &src_addr, src_ip_str, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, &dst_addr, dst_ip_str, INET_ADDRSTRLEN);
+
     std::ostringstream oss;
-    oss << src_ip << ":"
-        << dst_ip << ":"
+    oss << src_ip_str << ":"
+        << dst_ip_str << ":"
         << src_port << ":"
         << dst_port << ":"
         << static_cast<int>(protocol);

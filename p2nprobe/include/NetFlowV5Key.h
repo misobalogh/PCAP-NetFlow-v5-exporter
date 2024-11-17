@@ -29,8 +29,8 @@
  */
 class NetFlowV5Key : public FlowKey {
     public:                         // coresponding parts on wiki
-        std::string src_ip;         // 2. 
-        std::string dst_ip;         // 3.
+        uint32_t src_ip;         // 2. 
+        uint32_t  dst_ip;         // 3.
         uint8_t protocol;           // 4. 
         uint16_t src_port;          // 5.
         uint16_t dst_port;          // 6.
