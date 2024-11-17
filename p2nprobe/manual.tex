@@ -19,9 +19,9 @@
 		{\huge 
         \textsc{Fakulta informačních technologií}}\\
 		\vspace{\stretch{0.382}}
-		{\LARGE 
-        Typografie a publikování -- 2.\ projekt\\[0.6em]
-		PCAP NetFlow v5 exportér }
+		{\Large 
+        Síťové aplikace a správa sítí}\\[0.6em]
+        {\LARGE PCAP NetFlow v5 exportér}
         \vspace{\stretch{0.618}}
 	\end{center}
 	{\Large 2024 \hfill 
@@ -195,8 +195,8 @@ Reprezentácia jednotlivého sieťového toku, ktorá zapuzdruje všetky potrebn
 \end{table}
 
 
-\section{Návod na použitie}
-\label{sec:navod_na_pouzitie}
+\newpage
+\section{Návod na použitie}\label{sec:navod_na_pouzitie}
 
 \subsection{Kompilácia programu}
 
@@ -211,9 +211,7 @@ Program je možné spustiť takto:
 \begin{lstlisting}[language=bash]
 ./p2nprobe <host>:<port> <pcap_file_path> [-a <active_timeout> -i <inactive_timeout>]
 \end{lstlisting}
-
 Kde:
-
 \begin{itemize}
     \item \texttt{<pcap\_file\_path>} -- cesta k PCAP súboru, ktorý sa má čítať,
     \item \texttt{<host>} -- IP adresa kolektora, kam sa majú odosielať toky,
@@ -221,9 +219,7 @@ Kde:
     \item \texttt{-a <active\_timeout>} -- aktívny timeout, po ktorom je tok ukončený (defaultná hodnota 60 sekúnd),
     \item \texttt{-i <inactive\_timeout>} -- neaktívny timeout, po ktorom je tok ukončený (defaultná hodnota 60 sekúnd).
 \end{itemize}
-
 Poradie parametrov je ľubovoľné.
-
 Ukážka spustenia programu:
 \begin{lstlisting}[language=bash]
 ./p2nprobe localhost:9995 pcap_file.pcap -a 5 -i 30
@@ -253,17 +249,13 @@ Skript testuje rozne argumenty a vždy testuje všetky možne permutácie týcht
 
 \subsection{Aplikačné testy}
 Aplikáciu som testoval pomocou porovnávania s odporúčaným programom ako referenciu -- \texttt{softflowd}\cite{softflowd}. NetFlow toky som zachytával pomocou programu \texttt{nfcapd}.
-
 \begin{lstlisting}[language=bash]
 nfcapd -l . -p 9995        
 \end{lstlisting}
-
 V druhom termináli som potom spustil:
-
 \begin{lstlisting}[language=bash]
 sudo softflowd -r netflow_capture1.pcap -n localhost:9995
 \end{lstlisting}
-
 Bohužiaľ, aktívny a neaktívny timeout v \texttt{softflowd} nefungoval, takže som mohol testovať len predvolené hodnoty.
 
 Následne som toky analyzoval a porovnával pomocou programu \texttt{nfdump}.
@@ -271,12 +263,20 @@ Následne som toky analyzoval a porovnával pomocou programu \texttt{nfdump}.
 \begin{lstlisting}[language=bash]
 nfdump -r nfcapd.202411052100
 \end{lstlisting}
+Takto som získal referenčný výstup. Tento postup som opakoval pre môj program \texttt{p2nprobe}. Na porovnanie som si vytvoril Python skript, ktorý porovnáva výstupy od \texttt{nfdump} pre oba programy.
 
-Takto som získal referenčný výstup. Tento postup som opakoval pre môj program \texttt{p2nprobe}.
+Keďže nebolo možné takto testovať aktívny a neaktívny timeout, tak som potom zachytával pomocou vlastného Python skriptu \texttt{test\_probe.py}, ktorý vie vypísať všetky údaje z NetFlow záznamov na porovnanie alebo ladenie, ale aj porovnať s iným kolektorom, napríklad \texttt{softflowd}. Skript \texttt{test\_probe.py} sa dá spustiť napríklad takto:
+\begin{lstlisting}{language=bash}
+python3 tests/test_probe.py tcp.pcap 9995 60 60
+\end{lstlisting}
+kde:
+\begin{itemize}
+    \item \texttt{tcp.pcap} -- je pcap súbor na testovanie,
+    \item \texttt{9995} -- je port kolektora,
+    \item \texttt{60} -- aktívny timeout (nepovinný argument),
+    \item \texttt{60} -- neaktívny timeout (nepovinný argument).
+\end{itemize}
 
-Na porovnanie som si vytvoril Python skript, ktorý porovnáva výstupy od \texttt{nfdump} pre oba programy.
-
-Keďže nebolo možné takto testovať aktívny a neaktívny timeout, tak som potom zachytával pomocou vlastného Python skriptu \texttt{test\_probe.py}, ktorý vie vypísať všetky údaje z NetFlow záznamov, ale aj porovnať s iným kolektorom, napríklad \texttt{softflowd}.
 
 \newpage
 
@@ -331,8 +331,55 @@ Toto robustné testovanie by malo zabezpečiť funkčnosť programu s ľubovoľn
 \newpage
 
 \subsection{Výsledky aplikačných testov}
+Pri porovnávaní výstupu mojho programu a programu softlow mohli výsledky z nfacpd vyzerať napríklad takto:
+\begin{lstlisting}[language=bash,basicstyle=\footnotesize]
+Ident: 'none' Flows: 60, Packets: 1752, Bytes: 1063737, Sequence Errors: 0, 
+Bad Packets: 0
+Total ignored packets: 0
+Terminating nfcapd.
 
+Ident: 'none' Flows: 60, Packets: 1752, Bytes: 1063737, Sequence Errors: 0, 
+Bad Packets: 0
+Total ignored packets: 0
+Terminating nfcapd.
+\end{lstlisting}
+Po zobrazeni s programom \texttt{nfdumb} to vyzera takto (len poslednych par riadkov vypisu):
+\begin{lstlisting}[language=bash,basicstyle=\tiny]
+2024-10-09 20:27:46.445 INVALID  Ignore TCP      192.168.50.54:46998 ->     77.75.76.209:443            0.0.0.0:0     ->          0.0.0.0:0         3048        0
+2024-10-09 20:27:46.500 INVALID  Ignore TCP       77.75.78.104:443   ->    192.168.50.54:47944          0.0.0.0:0     ->          0.0.0.0:0        22482        0
+2024-10-09 20:27:46.500 INVALID  Ignore TCP      192.168.50.54:47944 ->     77.75.78.104:443            0.0.0.0:0     ->          0.0.0.0:0         1932        0
+Summary: total flows: 60, total bytes: 1.1 M, total packets: 1752, avg bps: 2.4 M, avg pps: 503, avg bpp: 607
+Time window: 2024-10-09 20:27:43 - 2024-10-09 20:27:46
+Total flows processed: 60, Blocks skipped: 0, Bytes read: 4928
+Sys: 0.002s flows/second: 25895.6    Wall: 0.000s flows/second: 66006.6
+\end{lstlisting}
+INVALID je tam kvôli tomu, že načítavame súbor, ktorý je ``offline". Keďže boli niektoré toky v inom poradí, vytvoril som si už vyššie spomínaný python skript, ktorý mi výstupy porovnal a ignoroval pri tom poradie tokov.
 
+Pre detailnejšie testovanie som potom tento skript prerobil na \texttt{test\_probe.py}, ktorý porovnával výstup s referenčným a kde som vedel preskúmať napríklad aj dĺžku toku. Výstup tohto testovacieho skriptu vyzeral napríklad takto (zase len posledných pár riadkov výstupu)
+\begin{lstlisting}[language=bash,basicstyle=\footnotesize]
+Flow ('192.168.50.54', 46998, '77.75.76.209', 443) matched!
+Time difference: 0ms
+
+Discrepancy in flow ('77.75.79.195', 443, '192.168.50.54', 33630):
+Collected: 12 packets | Reference: 12 packets
+Collected: 6385 octets | Reference: 6385 octets
+Time difference: 12ms
+
+Flow ('192.168.50.54', 33630, '77.75.79.195', 443) matched!
+Time difference: 0ms
+
+Discrepancy in flow ('77.75.78.104', 443, '192.168.50.54', 47944):
+Collected: 24 packets | Reference: 24 packets
+Collected: 22482 octets | Reference: 22482 octets
+Time difference: 49ms
+
+Flow ('192.168.50.54', 47944, '77.75.78.104', 443) matched!
+Time difference: 0ms
+
+Matched flows: 60/60
+Total packets: 1752 (Reference: 1752)
+Total octets: 1063737 (Reference: 1063737)
+\end{lstlisting}
 
 \newpage
 

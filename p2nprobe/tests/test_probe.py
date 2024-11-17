@@ -7,7 +7,7 @@ from typing import Dict, Optional
 
 from netflowcollector import NetflowCollector
 
-P2NPROBE_PATH = "../p2nprobe"
+P2NPROBE_PATH = "./p2nprobe"
 
 GREEN = '\033[92m'
 RED = '\033[91m'
@@ -128,22 +128,22 @@ def main():
         count += 1
     print(f"Total flows: {count}")
 
-    # collector_softflowd = NetflowCollector(port=collector_port+1)
+    collector_softflowd = NetflowCollector(port=collector_port+1)
 
-    # softflowd_process = run_softflowd(
-    #     pcap_file, collector_port+1, active_timeout, inactive_timeout)
-    # if not softflowd_process:
-    #     sys.exit(1)
+    softflowd_process = run_softflowd(
+        pcap_file, collector_port+1, active_timeout, inactive_timeout)
+    if not softflowd_process:
+        sys.exit(1)
 
-    # collector_softflowd.collect_flows()
+    collector_softflowd.collect_flows()
 
-    # _, stderr = softflowd_process.communicate()
-    # if softflowd_process.returncode != 0:
-    #     print(f"STDERR: {stderr.decode()}")
-    #     sys.exit(1)
+    _, stderr = softflowd_process.communicate()
+    if softflowd_process.returncode != 0:
+        print(f"STDERR: {stderr.decode()}")
+        sys.exit(1)
 
-    # print("\nComparing p2nprobe flows with softflowd flows:")
-    # compare_flows(collector_p2nprobe.flows, collector_softflowd.flows)
+    print("\nComparing p2nprobe flows with softflowd flows:")
+    compare_flows(collector_p2nprobe.flows, collector_softflowd.flows)
 
 
 if __name__ == "__main__":
