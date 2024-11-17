@@ -245,7 +245,14 @@ nfdump -r nfcapd.202411052020
 \newpage
 \section{Popis testovania aplikácie}
 
-Aplikáciu som testoval pomocou odporúčaného programu ako referenciu -- \texttt{softflowd}\cite{softflowd}. NetFlow toky som zachytával pomocou programu \texttt{nfcapd}.
+Všetky skripty použité na testovanie su v priečinku \texttt{tests}.
+
+\subsection{Testovanie CLI argumentov}
+Na testovanie command line argumentov som použil vlastný skript napisany v pythone: \texttt{test\_args.py}.
+Skript testuje rozne argumenty a vždy testuje všetky možne permutácie týchto argumentov, aby sa zaistilo, že argumenty môžu byť v ľubovoľnom poradí.
+
+\subsection{Aplikačné testy}
+Aplikáciu som testoval pomocou porovnávania s odporúčaným programom ako referenciu -- \texttt{softflowd}\cite{softflowd}. NetFlow toky som zachytával pomocou programu \texttt{nfcapd}.
 
 \begin{lstlisting}[language=bash]
 nfcapd -l . -p 9995        
@@ -271,7 +278,61 @@ Na porovnanie som si vytvoril Python skript, ktorý porovnáva výstupy od \text
 
 Keďže nebolo možné takto testovať aktívny a neaktívny timeout, tak som potom zachytával pomocou vlastného Python skriptu \texttt{test\_probe.py}, ktorý vie vypísať všetky údaje z NetFlow záznamov, ale aj porovnať s iným kolektorom, napríklad \texttt{softflowd}.
 
+\newpage
+
 \section{Výsledky testov}
+
+\subsection{Výsledky testovania CLI argumentov}
+
+Testy na arugmenty programu možno spustiť z koreňového adresára projektu takto:
+\begin{lstlisting}[language=bash]
+    python3 tests/test_args.py
+\end{lstlisting}
+
+
+Výsledky testov pre argumenty programu \texttt{test\_args.py}:
+
+\begin{lstlisting}{language=bash}
+Running p2nprobe argument tests with permutations...
+
+[PASS] Valid arguments
+  Total permutations tested: 2
+[PASS] Help message
+  Total permutations tested: 1
+[PASS] Help message 2
+  Total permutations tested: 2
+[PASS] Help message 3
+  Total permutations tested: 6
+[PASS] Help message 3
+  Total permutations tested: 2
+[PASS] Missing arguments
+  Total permutations tested: 1
+[PASS] Invalid port
+  Total permutations tested: 2
+[PASS] Invalid active timeout
+  Total permutations tested: 24
+[PASS] Invalid inactive timeout
+  Total permutations tested: 24
+[PASS] Missing port
+  Total permutations tested: 2
+[PASS] Invalid port format
+  Total permutations tested: 2
+[PASS] Valid timeouts
+  Total permutations tested: 24
+[PASS] Extra arguments
+  Total permutations tested: 6
+
+Summary: 13/13 tests passed
+Total permutations tested: 98
+\end{lstlisting}
+Vo výsledkoch je vždy či test prešiel alebo nie, názov toho, čo sa testovalo, a počet permutáci argumentov prítomných v danom teste.
+Toto robustné testovanie by malo zabezpečiť funkčnosť programu s ľubovoľným poradím argumentov.
+
+\newpage
+
+\subsection{Výsledky aplikačných testov}
+
+
 
 \newpage
 
