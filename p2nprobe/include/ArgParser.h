@@ -10,6 +10,7 @@
 #define ARG_PARSER_H
 
 #include <string>
+#include "Config.h"
 
 
 /**
@@ -25,15 +26,18 @@ class ArgParser {
 public:
     ArgParser(int argc, char* argv[]);
 
-    std::string getHost() const;
+    // Getters for parsed arguments
+    const std::string& getHost() const;
     int getPort() const;
-    std::string getPCAPFilePath() const;
+    const std::string& getPCAPFilePath() const;
     int getActiveTimeout() const;
     int getInactiveTimeout() const;
 
 private:
     void parseArgs(int argc, char* argv[]);
-    void parseHostAndPort(const std::string& collectorAdress, size_t colonIndex);
+    void parseHostAndPort(const std::string& collectorAddress, size_t colonIndex);
+    void validateTimeout(int timeout, const std::string& timeoutName);
+    void validatePcapFile(const std::string& filePath);
     void printUsage() const;
     void printHelp() const;
 
@@ -42,11 +46,7 @@ private:
     unsigned int collectorPort;
     std::string pcapFilePath;
 
-    // Default values for optional args
-    static const int DEFAULT_ACTIVE_TIMEOUT = 60;
-    static const int DEFAULT_INACTIVE_TIMEOUT = 60;
-
-    // Optional args
+    // Optional args with default values
     int activeTimeout;
     int inactiveTimeout;
 };
